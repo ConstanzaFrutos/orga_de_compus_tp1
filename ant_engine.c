@@ -24,64 +24,42 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////////////
 
 
-int get_colour_rotation(int colour, void* palette, void* rules){
+int get_colour_rotation(int colour, void* palette, void* rules) {
 	int i = 0;
 	int* palette_int = (int*) palette;
 	int* rules_int = (int*) rules;
-	int aux = palette_int[i];
-	while (aux != colour){
-		i++;
-		aux = palette_int[i];
-	}
+	for (; palette_int[i] != colour; ++i) {}
 	return rules_int[i];
 }
 
-int get_current_colour(void* ant_void, void* grid){
+int get_current_colour(void* ant_void, void* grid) {
 	square_grid_t* square_grid = (square_grid_t*) grid;
 	ant_t* ant = (ant_t*) ant_void;
 
-	int current = square_grid->grid[ant->y][ant->x];
-	return current;
+    return square_grid->grid[ant->y][ant->x];
 }
 
 void rotate_ant(void* ant_void, int rotation){
 	ant_t* ant = (ant_t*) ant_void;
-	int orientation = ant->o;
-	if (orientation == ON){
-		if (rotation == RL)
-			ant->o = OE;
-		else 
-			ant->o = OW;
-	} else if (orientation == OS){
-		if (rotation == RL)
-			ant->o = OW;
-		else 
-			ant->o = OE;
-	} else if (orientation == OE){
-		if (rotation == RL)
-			ant->o = OS;
-		else 
-			ant->o = ON;
-	} else {
-		if (rotation == RL)
-			ant->o = ON;
-		else 
-			ant->o = OS;
+	switch (ant->o) {
+        case ON:
+            (rotation == RL) ? (ant->o = OE) : (ant->o = OW);
+            break;
+        case OS:
+            (rotation == RL) ? (ant->o = OW) : (ant->o = OE);
+            break;
+	    case OE:
+            (rotation == RL) ? (ant->o = OS) : (ant->o = ON);
+	        break;
+        case OW:
+            (rotation == RL) ? (ant->o = ON) : (ant->o = OS);
+            break;
 	}
 }
 
 void move_ant(void* ant_void){
 	ant_t* ant = (ant_t*) ant_void;
-	int orientation = ant->o;
-	if (orientation == ON){
-		ant->y --;
-	} else if (orientation == OS){
-		ant->y ++;
-	} else if (orientation == OW){
-		ant->x ++;
-	} else {
-		ant->x --;
-	}
+    (ant->o == ON) ? --ant->y : ((ant->o == OS) ? ++ant->y : (ant->o == OW) ? ++ant->x : --ant->x);
 }
 
 void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
@@ -94,9 +72,7 @@ void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
 	square_grid->grid[ant->y][ant->x] = new_colour;
 }
 
-void*
-paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations)
-{
+void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations) {
   for (int i=0; i<iterations; ++i){
   	int current = get_current_colour(ant, grid);
   	int rotation = get_colour_rotation(current, palette, rules);
@@ -104,78 +80,58 @@ paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations)
   	paint_panel(ant, grid, palette, i);
   	move_ant(ant);
   }
-  
   return grid;
 }
 
-int get_quantity(char* colours){
-	char aux = '\0';
-	int n = 0;
-	int i = 0;
-	do {
-		aux = colours[i];
-		if (aux == '|')
-			n ++;
-		i++;
-	} while (aux != '\0');
-
-	return n + 1;
+int get_quantity(const char *colours) {
+	int n = 1;  // Inicialmente hay al menos un color
+    for (int i = 0; colours[i] ; ++i)
+        if (colours[i] == '|')
+            ++n;
+	return n;
 }
 
-void*
-make_rules(char *spec)
-{
-  int n = get_quantity(spec);	
-  int* rules = calloc(n, sizeof(int));
-  char aux = '\0';
-  int p = 0;
-  int i = 0;
-
-  do{
-  	aux = spec[i];
-  	if (aux == 'L'){
-  		rules[p] = RL;
-  	} else if (aux == 'R'){
-  		rules[p] = RR;
-  	} else {
-  		p--;
-  	}
-  	p++;
-  	i++;
-  } while (aux != '\0');
-
+void* make_rules(char *spec) {
+  int* rules = calloc(get_quantity(spec), sizeof(int));
+  for (int i = 0, j = 0; spec[i] ; ++i, ++j)
+    switch (spec[i]) {
+        case 'L':
+            rules[j] = RL;
+            break;
+        case 'R':
+            rules[j] = RR;
+            break;
+        default:
+            --j;
+            break;
+    }
   return (void*) rules;
 }
 
-void*
-make_palette(char *colours)
-{
-  int n = get_quantity(colours);	
-  int* pallete = calloc(n, sizeof(int));
-  char aux = '\0';
-  int p = 0;
-  int i = 0;
-
-  do{
-  	aux = colours[i];
-  	if (aux == 'R'){
-  		pallete[p] = CR;
-  	} else if (aux == 'G'){
-  		pallete[p] = CG;
-  	} else if (aux == 'B'){
-  		pallete[p] = CB;
-  	} else if (aux == 'Y'){
-  		pallete[p] = CY;
-  	} else if (aux == 'N'){
-  		pallete[p] = CN;
-  	} else if (aux == 'W'){
-  		pallete[p] = CW;
-  	} else {
-  		p--;
-  	}
-  	p++;
-  	i++;
-  } while (aux != '\0');
-
+void* make_palette(char *colours) {
+  int* pallete = calloc(get_quantity(colours), sizeof(int));
+  for (int i = 0, j = 0; colours[i] ; ++i, ++j)
+      switch (colours[i]) {
+          case 'R':
+              pallete[j] = CR;
+              break;
+          case 'G':
+              pallete[j] = CG;
+              break;
+          case 'B':
+              pallete[j] = CB;
+              break;
+          case 'Y':
+              pallete[j] = CY;
+              break;
+          case 'N':
+              pallete[j] = CN;
+              break;
+          case 'W':
+              pallete[j] = CW;
+              break;
+          default:
+              --j;
+      }
   return (void*) pallete;
 }
