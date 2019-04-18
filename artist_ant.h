@@ -3,6 +3,8 @@
 
 #include <unistd.h>
 
+#include <stdint.h>
+
 #include "ant_constants.h"
 
 typedef enum colour {RED = CR, GREEN = CG, BLUE = CB, YELLOW = CY, BLACK = CN, WHITE = CW} colour_t;

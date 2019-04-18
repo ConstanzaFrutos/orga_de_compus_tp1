@@ -24,6 +24,7 @@ show_warn(char *p)
 {
      fprintf(stderr, " %s\n", p);
 }
+
 static void
 show_help(char *p) {
     fprintf(stderr, "  %s -g <dimensions> -p <colors> -r <rules> -t <n>\n", p);

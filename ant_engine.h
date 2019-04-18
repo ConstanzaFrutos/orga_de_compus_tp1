@@ -1,6 +1,8 @@
 #ifndef __ANT_ENGINE_H__
 #define __ANT_ENGINE_H__
 
+#include <stdint.h>
+
 #include <stdio.h>
 #include <unistd.h>
 
