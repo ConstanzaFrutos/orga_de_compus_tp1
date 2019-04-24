@@ -3,10 +3,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "ant_constants.h"
 
-#include "ant_constants.h" //No se si se puede incluir o que
-
-//ESTO NO SE SI PUEDE IR ACA; SINO NO SE COMO HACERLO
 typedef enum colour {RED = CR, GREEN = CG, BLUE = CB, YELLOW = CY, BLACK = CN, WHITE = CW} colour_t;
 typedef enum orientation {NORTH = ON, SOUTH = OS, EAST = OE, WEST = OW} orientation_t;
 typedef enum rotation {LEFT = RL, RIGHT = RR} rotation_t;
@@ -21,15 +19,14 @@ typedef struct {
     uint32_t height;
     colour_t **grid;
 } square_grid_t;
-////////////////////////////////////////////////////////////////////////////
-
+/****************************************************************************/
 
 int get_colour_rotation(int colour, void* palette, void* rules) {
-	int i = 0;
-	int* palette_int = (int*) palette;
+	int pos = 0;
+	palette_t* palette_int = (palette_t*) palette;
 	int* rules_int = (int*) rules;
-	for (; palette_int[i] != colour; ++i) {}
-	return rules_int[i];
+	for (; palette_int->colours[pos] != colour; ++pos) {}
+	return rules_int[pos];
 }
 
 int get_current_colour(void* ant_void, void* grid) {
@@ -56,7 +53,7 @@ void rotate_ant(void* ant_void, int rotation){
             break;
 	}
 }
-
+/*todo QUE CUANDO LLEGA AL FINAL PEGUE LA VUELTA*/
 void move_ant(void* ant_void){
 	ant_t* ant = (ant_t*) ant_void;
     (ant->o == ON) ? --ant->y : ((ant->o == OS) ? ++ant->y : (ant->o == OW) ? ++ant->x : --ant->x);
@@ -65,10 +62,10 @@ void move_ant(void* ant_void){
 void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
 	square_grid_t* square_grid = (square_grid_t*) grid;
 	ant_t* ant = (ant_t*) ant_void;
-	int* palette_int = (int*) palette;
+	palette_t* palette_struct = (palette_t*) palette;
 
-	int new_colour = palette_int[iteration+1]; //Hay que usar mod, pero no se como
-	                                         //calcular la long de palette
+	size_t pos = (iteration + 1) % palette_struct->size;
+	int new_colour = palette_struct->colours[pos];
 	square_grid->grid[ant->y][ant->x] = new_colour;
 }
 
@@ -80,6 +77,8 @@ void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterati
   	paint_panel(ant, grid, palette, i);
   	move_ant(ant);
   }
+  palette_destroy(palette);
+  free(rules);
   return grid;
 }
 
@@ -109,29 +108,41 @@ void* make_rules(char *spec) {
 }
 
 void* make_palette(char *colours) {
-  int* pallete = calloc(get_quantity(colours), sizeof(int));
+  palette_t* palette = create_palette(colours);
   for (int i = 0, j = 0; colours[i] ; ++i, ++j)
       switch (colours[i]) {
           case 'R':
-              pallete[j] = CR;
+              palette->colours[j] = CR;
               break;
           case 'G':
-              pallete[j] = CG;
+              palette->colours[j] = CG;
               break;
           case 'B':
-              pallete[j] = CB;
+              palette->colours[j] = CB;
               break;
           case 'Y':
-              pallete[j] = CY;
+              palette->colours[j] = CY;
               break;
           case 'N':
-              pallete[j] = CN;
+              palette->colours[j] = CN;
               break;
           case 'W':
-              pallete[j] = CW;
+              palette->colours[j] = CW;
               break;
           default:
               --j;
       }
-  return (void*) pallete;
+    return (void*) palette;
+}
+
+palette_t* create_palette(char* colours) {
+    palette_t* palette = malloc(sizeof(palette_t));
+    palette->size = get_quantity(colours);
+    palette->colours = calloc(palette->size, sizeof(int));
+    return palette;
+}
+
+void palette_destroy(palette_t* palette) {
+    free(palette->colours);
+    free(palette);
 }
