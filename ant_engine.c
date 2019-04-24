@@ -22,9 +22,9 @@ typedef struct {
 /****************************************************************************/
 
 int get_colour_rotation(int colour, void* palette, void* rules) {
-	int pos = 0;
 	palette_t* palette_int = (palette_t*) palette;
-	int* rules_int = (int*) rules;
+    int* rules_int = (int*) rules;
+    int pos = 0;
 	for (; palette_int->colours[pos] != colour; ++pos) {}
 	return rules_int[pos];
 }
@@ -39,16 +39,16 @@ int get_current_colour(void* ant_void, void* grid) {
 void rotate_ant(void* ant_void, int rotation){
 	ant_t* ant = (ant_t*) ant_void;
 	switch (ant->o) {
-        case ON:
+        case OS:
             (rotation == RL) ? (ant->o = OE) : (ant->o = OW);
             break;
-        case OS:
+        case ON:
             (rotation == RL) ? (ant->o = OW) : (ant->o = OE);
             break;
-	    case OE:
+	    case OW:
             (rotation == RL) ? (ant->o = OS) : (ant->o = ON);
 	        break;
-        case OW:
+        case OE:
             (rotation == RL) ? (ant->o = ON) : (ant->o = OS);
             break;
 	}
@@ -56,7 +56,8 @@ void rotate_ant(void* ant_void, int rotation){
 /*todo QUE CUANDO LLEGA AL FINAL PEGUE LA VUELTA*/
 void move_ant(void* ant_void){
 	ant_t* ant = (ant_t*) ant_void;
-    (ant->o == ON) ? --ant->y : ((ant->o == OS) ? ++ant->y : (ant->o == OW) ? ++ant->x : --ant->x);
+    (ant->o == ON) ? --ant->y : ((ant->o == OS) ? ++ant->y : (ant->o == OW) ?
+    --ant->x : ++ant->x);
 }
 
 void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
