@@ -54,10 +54,22 @@ void rotate_ant(void* ant_void, int rotation){
 	}
 }
 /*todo QUE CUANDO LLEGA AL FINAL PEGUE LA VUELTA*/
-void move_ant(void* ant_void){
+void move_ant(void* ant_void, void* grid) {
 	ant_t* ant = (ant_t*) ant_void;
-    (ant->o == ON) ? --ant->y : ((ant->o == OS) ? ++ant->y : (ant->o == OW) ?
-    --ant->x : ++ant->x);
+	square_grid_t* square_grid = (square_grid_t*) grid;
+	switch (ant->o) {
+        case ON:
+            (ant->y == 0) ? (ant->y = square_grid->height - 1) : --ant->y;
+            break;
+        case OS:
+            (ant->y == square_grid->height - 1) ? ant->y = 0 : ++ant->y;
+            break;
+        case OW:
+            (ant->x == 0) ? (ant->x = square_grid->width - 1) : --ant->x;
+            break;
+        case OE:
+            (ant->x == square_grid->width - 1) ? (ant->x = 0) : ++ant->x;
+	}
 }
 
 void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
@@ -76,7 +88,7 @@ void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterati
   	int rotation = get_colour_rotation(current, palette, rules);
   	rotate_ant(ant, rotation);
   	paint_panel(ant, grid, palette, i);
-  	move_ant(ant);
+  	move_ant(ant, grid);
   }
   palette_destroy(palette);
   free(rules);
