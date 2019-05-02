@@ -6,6 +6,15 @@
 #include <stdio.h>
 #include <unistd.h>
 
+typedef struct pallete {
+    int* colours;
+    size_t size;
+} palette_t;
+
+palette_t* create_palette(char* colours);
+
+void palette_destroy(palette_t* palette);
+
 void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations);
 
 #define panic(s)       \
