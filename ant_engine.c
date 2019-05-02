@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "ant_constants.h"
 
 typedef enum colour {RED = CR, GREEN = CG, BLUE = CB, YELLOW = CY, BLACK = CN, WHITE = CW} colour_t;
@@ -90,22 +91,21 @@ void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterati
   	paint_panel(ant, grid, palette, i);
   	move_ant(ant, grid);
   }
-  palette_destroy(palette);
-  free(rules);
   return grid;
 }
 
 int get_quantity(const char *colours) {
 	int n = 1;  // Inicialmente hay al menos un color
-    for (int i = 0; colours[i] ; ++i)
+    for (int i = 0; i < strlen(colours) ; ++i) {
         if (colours[i] == '|')
             ++n;
+    }
 	return n;
 }
 
 void* make_rules(char *spec) {
   int* rules = calloc(get_quantity(spec), sizeof(int));
-  for (int i = 0, j = 0; spec[i] ; ++i, ++j)
+  for (int i = 0, j = 0; i < strlen(spec) ; ++i, ++j)
     switch (spec[i]) {
         case 'L':
             rules[j] = RL;
@@ -122,7 +122,7 @@ void* make_rules(char *spec) {
 
 void* make_palette(char *colours) {
   palette_t* palette = create_palette(colours);
-  for (int i = 0, j = 0; colours[i] ; ++i, ++j)
+  for (int i = 0, j = 0; i < strlen(colours) ; ++i, ++j)
       switch (colours[i]) {
           case 'R':
               palette->colours[j] = CR;
