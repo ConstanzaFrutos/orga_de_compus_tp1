@@ -146,6 +146,17 @@ main(int argc, char **argv)
 
   grid_out();
 
+  /* Libero memoria pedida en desarrollo de main */
+  for (int i = 0; i < grid_width; ++i) {
+      free(square_grid->grid[i]);
+  }
+  free(square_grid->grid);
+  free(colour_spec);
+  free(rule_spec);
+
+  /* Libero memoria pedida en ant_engine */
+  palette_destroy(palette);
+  free(rules);
   return 0;
 }
 
