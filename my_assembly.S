@@ -32,12 +32,13 @@ get_current_colour:
     lw $t6, 8($t3) #t6 = grid
    
     /* Funcionalidad aca */
-	subu $t7, $t5, $t1 # t6 = h-y
-	subu $t7, $t7, 1 # t6 = h-y-1
+    sll $t1, $t1, 4 #multiplico x por 4
+    sll $t2, $t2, 4 #multiplico y por 4
 
-	mul  $t7, $t4, $t7 # W*(h-y-1)
+	/*mul  $t7, $t4, $t2 # W*y*/
 
-	addu $t7, $t7, $t1 # t7 = w*(h-y-1) + x 
+	addu $t7, $t4, $t2
+	addu $t7, $t7, $t1 # t7 = w*y + x 
 	sll $t7, $t7, 2 #multiplico por 4
 	
 	addi $t8, $t3, 8 #direccion de mem de grid
