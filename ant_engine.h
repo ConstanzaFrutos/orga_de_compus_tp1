@@ -7,8 +7,8 @@
 #include <unistd.h>
 
 typedef struct pallete {
-    int* colours;
     size_t size;
+    int* colours;
 } palette_t;
 
 palette_t* create_palette(char* colours);

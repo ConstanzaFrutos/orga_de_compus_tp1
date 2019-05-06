@@ -22,14 +22,14 @@ typedef struct {
     colour_t **grid;
 } square_grid_t;
 /****************************************************************************/
-
+/*
 int get_colour_rotation(int colour, void* palette, void* rules) {
 	palette_t* palette_int = (palette_t*) palette;
     int* rules_int = (int*) rules;
     int pos = 0;
 	for (; palette_int->colours[pos] != colour; ++pos) {}
 	return rules_int[pos];
-}
+}*/
 
 /*
 int get_current_colour(void* ant_void, void* grid) {
@@ -75,6 +75,7 @@ void move_ant(void* ant_void, void* grid) {
 	}
 }
 
+/*
 void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
 	square_grid_t* square_grid = (square_grid_t*) grid;
 	ant_t* ant = (ant_t*) ant_void;
@@ -83,7 +84,7 @@ void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
 	size_t pos = (iteration + 1) % palette_struct->size;
 	int new_colour = palette_struct->colours[pos];
 	square_grid->grid[ant->y][ant->x] = new_colour;
-}
+}*/
 
 void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations) {
   for (int i=0; i<iterations; ++i){
