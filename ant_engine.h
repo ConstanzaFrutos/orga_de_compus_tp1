@@ -15,6 +15,10 @@ palette_t* create_palette(char* colours);
 
 void palette_destroy(palette_t* palette);
 
+void* make_rules(char *spec);
+
+void* make_palette(char *colours);
+
 void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations);
 
 #define panic(s)       \

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "ant_constants.h"
+#include "my_assembly.h"
 
 typedef enum colour {RED = CR, GREEN = CG, BLUE = CB, YELLOW = CY, BLACK = CN, WHITE = CW} colour_t;
 typedef enum orientation {NORTH = ON, SOUTH = OS, EAST = OE, WEST = OW} orientation_t;
@@ -30,12 +31,13 @@ int get_colour_rotation(int colour, void* palette, void* rules) {
 	return rules_int[pos];
 }
 
+/*
 int get_current_colour(void* ant_void, void* grid) {
 	square_grid_t* square_grid = (square_grid_t*) grid;
 	ant_t* ant = (ant_t*) ant_void;
 
     return square_grid->grid[ant->y][ant->x];
-}
+}*/
 
 void rotate_ant(void* ant_void, int rotation){
 	ant_t* ant = (ant_t*) ant_void;
