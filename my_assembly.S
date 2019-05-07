@@ -1,6 +1,7 @@
 .globl get_current_colour
 .globl get_colour_rotation
 .globl paint_panel
+.globl rotate_ant
 
 .text
 .abicalls
@@ -176,3 +177,79 @@ paint_panel:
     jr $ra
 
 .end paint_panel
+
+
+.text
+.abicalls
+.align 2
+.ent rotate_ant
+
+rotate_ant: 
+	#define ra_frame_size 24
+    #define ra_frame_fp 20
+    #define ra_frame_gp 16
+    #define ra_frame_2arg 28
+    #define ra_frame_1arg 24
+    
+    .frame $fp, ra_frame_size, $ra
+    subu $sp, $sp, ra_frame_size
+    .cprestore 16
+    sw $gp, ra_frame_gp($sp)
+    sw $fp, ra_frame_fp($sp)
+    move  $fp, $sp /* frame pointer al fondo */
+      
+    sw $a0, ra_frame_1arg($fp) /* Primer argumento (ant)*/
+    sw $a1, ra_frame_2arg($fp) /* Segundo argumento (rotation)*/
+
+    lw $t0, ra_frame_1arg($fp) /* t0 -> dir de memoria de ant*/
+    lw $t1, 8($t0) # t1 = o
+
+    lw $t3, ra_frame_2arg($fp) /* t3 -> valor de rotation (int)*/
+   
+    /* Funcionalidad aca */
+    addi $t4, $zero, 1 # t4 = 1
+    addi $t6, $zero, 2
+    addi $t7, $zero, 3
+
+    seq $t5, $t3, $zero #Si rotation es 0 -> $t5 = 1
+
+    beq $t1, $zero, north
+    beq $t1, $t4, south
+    beq $t1, $t6, east
+    beq $t1, $t7, west
+
+north:
+	beq $t5, $t4, set_west #Si rot = 1 -> set_west
+	b   set_east
+south:
+	beq $t5, $t4, set_east
+	b   set_west
+east:
+	beq $t5, $t4, set_north
+	b   set_south
+west:  
+	beq $t5, $t4, set_south
+	b   set_north
+
+set_north:
+	addi $t6, $zero, 0
+	b finish
+set_south:
+	addi $t6, $zero, 1
+	b finish
+set_east:
+	addi $t6, $zero, 2
+	b finish
+set_west:  
+	addi $t6, $zero, 3
+
+finish:
+	sw $t6, 8($t0) #Seteo la orientacion
+
+    lw $gp, ra_frame_gp($sp)
+    lw $fp, ra_frame_fp($sp)
+    addu $sp, $sp, ra_frame_size
+    jr $ra
+
+.end rotate_ant
+

@@ -39,7 +39,7 @@ int get_current_colour(void* ant_void, void* grid) {
 
     return square_grid->grid[ant->y][ant->x];
 }*/
-
+/*
 void rotate_ant(void* ant_void, int rotation){
 	ant_t* ant = (ant_t*) ant_void;
 	switch (ant->o) {
@@ -56,7 +56,8 @@ void rotate_ant(void* ant_void, int rotation){
             (rotation == RL) ? (ant->o = ON) : (ant->o = OS);
             break;
 	}
-}
+}*/
+
 /*todo QUE CUANDO LLEGA AL FINAL PEGUE LA VUELTA*/
 void move_ant(void* ant_void, void* grid) {
 	ant_t* ant = (ant_t*) ant_void;
