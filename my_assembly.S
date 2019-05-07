@@ -33,16 +33,16 @@ get_current_colour:
     lw $t5, 4($t3) #t5 = h
    
     /* Funcionalidad aca */
-    sll $t1, $t1, 4 #multiplico x por 4
-    sll $t2, $t2, 4 #multiplico y por 4
+    sll $t1, $t1, 2 # x * 4
+    sll $t2, $t2, 2 # y * 4
 
-	addu $t7, $t4, $t2
-	addu $t7, $t7, $t1 # t7 = w + y + x 
-	sll $t7, $t7, 2 #multiplico por 4
-	
-	addi $t8, $t3, 8 #direccion de mem de grid
-	addu $t8, $t8, $t7 #direccion de mem del dato
-	lw   $t9, 0($t8) #cargo en t9 el dato
+    lw $t8, 8($t3) #direccion de mem de grid
+    addu $t1, $t8, $t1 # grid + x 
+    lw $t8, 0($t1)
+
+	addu $t2, $t8, $t2 # t7 = grid + y + x 
+
+	lw   $t9, 0($t2) #cargo en t9 el dato
 	move $v0, $t9  #Guardo en v0 lo que devuelvo
 
     lw $gp, frame_gp($sp)
@@ -149,7 +149,6 @@ paint_panel:
     lw $t7, pp_frame_4arg($fp) /* t7 -> dir de memoria de iteration*/
 
     /* Funcionalidad aca */
-
     /* size_t pos = (iteration + 1) % palette_struct->size; */
     addi $t7, $t7, 1 #t8 = iteration + 1
     rem $t9, $t7, $t4 #t9 = (it + 1) % size
@@ -163,15 +162,13 @@ paint_panel:
     sll $t1, $t1, 2 # x * 4
     sll $t2, $t2, 2 # y * 4
 
-    lw $t8, 0($t3) #En t8 cargo w
-    addu $t7, $t8, $t1 # w + x 
-	addu $t7, $t7, $t2 # t7 = w + y + x 
-	sll $t7, $t7, 2 # multiplico por 4
+    lw $t8, 8($t3) #direccion de mem de grid
+    addu $t2, $t8, $t2 # grid + x 
+    lw $t8, 0($t2)
 
-	addi $t8, $t3, 8 #direccion de mem de grid
-	addu $t8, $t8, $t7 #direccion de mem del dato
+	addu $t1, $t8, $t1 # t7 = grid + y + x 
 
-	sw  $t9, 0($t8) 
+	sw  $t9, 0($t1) #Cargo el valor en memoria
 
     lw $gp, pp_frame_gp($sp)
     lw $fp, pp_frame_fp($sp)

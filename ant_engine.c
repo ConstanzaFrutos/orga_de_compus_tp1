@@ -12,7 +12,8 @@ typedef enum orientation {NORTH = ON, SOUTH = OS, EAST = OE, WEST = OW} orientat
 typedef enum rotation {LEFT = RL, RIGHT = RR} rotation_t;
 
 typedef struct {
-    uint32_t x, y;
+    uint32_t x;
+    uint32_t y;
     orientation_t o;
 } ant_t;
 
