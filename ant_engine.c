@@ -59,6 +59,7 @@ void rotate_ant(void* ant_void, int rotation){
 }*/
 
 /*todo QUE CUANDO LLEGA AL FINAL PEGUE LA VUELTA*/
+/*
 void move_ant(void* ant_void, void* grid) {
 	ant_t* ant = (ant_t*) ant_void;
 	square_grid_t* square_grid = (square_grid_t*) grid;
@@ -75,7 +76,7 @@ void move_ant(void* ant_void, void* grid) {
         case OE:
             (ant->x == square_grid->width - 1) ? (ant->x = 0) : ++ant->x;
 	}
-}
+}*/
 
 /*
 void paint_panel(void* ant_void, void* grid, void* palette, int iteration){

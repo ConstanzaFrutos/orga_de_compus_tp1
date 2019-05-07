@@ -2,6 +2,7 @@
 .globl get_colour_rotation
 .globl paint_panel
 .globl rotate_ant
+.globl move_ant
 
 .text
 .abicalls
@@ -252,4 +253,108 @@ finish:
     jr $ra
 
 .end rotate_ant
+
+
+
+.text
+.abicalls
+.align 2
+.ent move_ant
+
+move_ant: 
+	#define ma_frame_size 24
+    #define ma_frame_fp 20
+    #define ma_frame_gp 16
+    #define ma_frame_2arg 28
+    #define ma_frame_1arg 24
+    
+    .frame $fp, ma_frame_size, $ra
+    subu $sp, $sp, ma_frame_size
+    .cprestore 16
+    sw $gp, ma_frame_gp($sp)
+    sw $fp, ma_frame_fp($sp)
+    move  $fp, $sp /* frame pointer al fondo */
+      
+    sw $a0, ma_frame_1arg($fp) /* Primer argumento (ant)*/
+    sw $a1, ma_frame_2arg($fp) /* Segundo argumento (grid)*/
+
+    lw $t0, ma_frame_1arg($fp) /* t0 -> dir de memoria de ant*/
+    lw $t1, 8($t0) # t1 = o
+
+    lw $t3, ma_frame_2arg($fp) /* t3 -> dir de memoria de grid*/
+   
+    /* Funcionalidad aca */
+    addi $t4, $zero, 1 # t4 = 1 south
+    addi $t6, $zero, 2 # east
+    addi $t7, $zero, 3 # west
+
+    beq $t1, $zero, north_ma
+    beq $t1, $t4, south_ma
+    beq $t1, $t6, east_ma
+    beq $t1, $t7, west_ma
+
+north_ma:
+	lw $t5, 4($t0) #cargo y
+	beq $t5, $zero, y_goes_around #Si y = 0 -> 
+	b   decrement_y
+south_ma:
+	lw $t5, 4($t0) #cargo y
+	lw $t6, 4($t3) #cargo h
+	subu $t6, $t6, 1 # t6 = h - 1
+	beq $t5, $t6, y_equals_cero
+	b increment_y
+east_ma:
+	lw $t5, 0($t0) #cargo x
+	lw $t6, 0($t3) #cargo w
+	subu $t6, $t6, 1 # t6 = w - 1
+	beq $t5, $t6, x_equals_cero
+	b increment_x
+west_ma:  
+	lw $t5, 0($t0) #cargo x
+	beq $t5, $zero, x_goes_around #Si x = 0 -> 
+	b   decrement_x
+
+y_goes_around:
+	/* ant->y = square_grid->height - 1 */
+	lw $t6, 4($t3) # t6 = h
+	subu $t6, $t6, 1 # t6 = h - 1
+	sw $t6, 4($t0)
+	b finish_ma
+decrement_y:
+	subu $t5, $t5, 1 # t5 = y - 1
+	sw $t5, 4($t0)
+	b finish_ma
+y_equals_cero:
+	sw $zero, 4($t0)
+	b finish_ma
+increment_y:  
+	addi $t5, $t5, 1
+	sw $t5, 4($t0)
+	b finish_ma
+x_equals_cero:
+	sw $zero, 0($t0)
+	b finish_ma
+increment_x:  
+	addi $t5, $t5, 1
+	sw $t5, 0($t0)
+	b finish_ma
+decrement_x:
+	subu $t5, $t5, 1 # t5 = x - 1
+	sw $t5, 0($t0)
+	b finish_ma
+x_goes_around:
+	/* ant->x = square_grid->width - 1 */
+	lw $t6, 0($t3) # t6 = w
+	subu $t6, $t6, 1 # t6 = w - 1
+	sw $t6, 0($t0)
+	b finish_ma		
+
+finish_ma:
+
+    lw $gp, ma_frame_gp($sp)
+    lw $fp, ma_frame_fp($sp)
+    addu $sp, $sp, ra_frame_size
+    jr $ra
+
+.end move_ant
 
