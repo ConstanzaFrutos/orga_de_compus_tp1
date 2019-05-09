@@ -22,7 +22,8 @@ typedef struct {
     colour_t **grid;
 } square_grid_t;
 
-//void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations);
+extern void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t
+iterations);
 
 //void* make_rules(char *spec);
 

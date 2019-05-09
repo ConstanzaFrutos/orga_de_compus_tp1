@@ -19,7 +19,8 @@ void* make_rules(char *spec);
 
 void* make_palette(char *colours);
 
-void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations);
+void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t
+iterations);
 
 #define panic(s)       \
   do {                 \

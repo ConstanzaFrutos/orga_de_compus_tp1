@@ -89,16 +89,16 @@ void paint_panel(void* ant_void, void* grid, void* palette, int iteration){
 	square_grid->grid[ant->y][ant->x] = new_colour;
 }*/
 
-void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations) {
-  for (int i=0; i<iterations; ++i){
-  	int current = get_current_colour(ant, grid);
-  	int rotation = get_colour_rotation(current, palette, rules);
-  	rotate_ant(ant, rotation);
-  	paint_panel(ant, grid, palette, i);
-  	move_ant(ant, grid);
-  }
-  return grid;
-}
+//void* paint(void *ant, void *grid, void *palette, void *rules,  uint32_t iterations) {
+//  for (int i=0; i<iterations; ++i){
+//  	int current = get_current_colour(ant, grid);
+//  	int rotation = get_colour_rotation(current, palette, rules);
+//  	rotate_ant(ant, rotation);
+//  	paint_panel(ant, grid, palette, i);
+//  	move_ant(ant, grid);
+//  }
+//  return grid;
+//}
 
 int get_quantity(const char *colours) {
 	int n = 1;  // Inicialmente hay al menos un color
