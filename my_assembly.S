@@ -389,6 +389,8 @@ paint:
     sw $a3, p_frame_4arg($fp) /* Cuarto argumento (rules) */
 #    sw $a4, p_frame_5arg($fp) /* Quinto argumento (iterations) */
 
+	sw $s7, 68($fp)
+
     addu $s7, $zero, $zero # Contador en 0
     lw $v1, p_frame_5arg($fp)  # Cargo quinto argumento (iterations)
     #addu $t1, $t1, $zero    // t1 -> Cantidad iteraciones
@@ -426,8 +428,7 @@ paint_loop:
     lw $t3, p_frame_3arg($fp)
 #    move $a2, p_frame_3arg($fp) # palette tercer arg
     move $a2, $t3
-    move $a3, $t0   # numero iteracion cuarto arg
-    
+    move $a3, $s7   # numero iteracion cuarto arg
     jal paint_panel
 
     jal move_ant    # ant sigue siendo primer arg y grid el segundo
@@ -444,6 +445,8 @@ end_paint:
     lw $t3, p_frame_2arg($fp)
 #    move $v0, p_frame_2arg($fp) # Valor de retorno es grid
     move $v0, $t3
+
+    lw $s7, 68($fp)
 
     lw $gp, p_frame_gp($sp)
     lw $fp, p_frame_fp($sp)
