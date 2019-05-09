@@ -107,7 +107,7 @@ end:
 
     lw $gp, gcr_frame_gp($sp)
     lw $fp, gcr_frame_fp($sp)
-    addu $sp, $sp, frame_size
+    addu $sp, $sp, gcr_frame_size
     jr $ra
 
 .end get_colour_rotation
@@ -175,7 +175,7 @@ paint_panel:
 
     lw $gp, pp_frame_gp($sp)
     lw $fp, pp_frame_fp($sp)
-    addu $sp, $sp, frame_size
+    addu $sp, $sp, pp_frame_size
     jr $ra
 
 .end paint_panel
@@ -380,6 +380,7 @@ paint:
     .cprestore 16
     sw $gp, p_frame_gp($sp)
     sw $fp, p_frame_fp($sp)
+    sw $ra, p_frame_ra($sp)
     move  $fp, $sp /* frame pointer al fondo */
 
     sw $a0, p_frame_1arg($fp) /* Primer argumento (ant)*/
@@ -388,10 +389,10 @@ paint:
     sw $a3, p_frame_4arg($fp) /* Cuarto argumento (rules) */
 #    sw $a4, p_frame_5arg($fp) /* Quinto argumento (iterations) */
 
-    addu $t0, $zero, $zero # Contador en 0
-    lw $t1, p_frame_5arg($fp)  # Cargo quinto argumento (iterations)
-    addu $t1, $t1, $zero    // t1 -> Cantidad iteraciones
-    beq $t0, $t1, end_paint
+    addu $s7, $zero, $zero # Contador en 0
+    lw $v1, p_frame_5arg($fp)  # Cargo quinto argumento (iterations)
+    #addu $t1, $t1, $zero    // t1 -> Cantidad iteraciones
+    beq $s7, $v1, end_paint
     b paint_loop
 
 paint_loop:
@@ -401,43 +402,46 @@ paint_loop:
 
     /* get_colour_rotation */
     move $a0, $v0   # color retornado primer arg
-    addu $t3, $fp, p_frame_3arg
+    lw $t3, p_frame_3arg($fp)
 #    move $a1, p_frame_3arg($fp) # palette segundo argumento
     move $a1, $t3
-    addu $t3, $fp, p_frame_4arg
+    lw $t3, p_frame_4arg($fp)
 #    move $a2, p_frame_4arg($fp) # rules tercer argumento
     move $a2, $t3
     jal get_colour_rotation
 
     /* rotate_ant */
-    addu $t3, $fp, p_frame_1arg
+    lw $t3, p_frame_1arg($fp)
 #    move $a0, p_frame_1arg($fp) # ant primer arg
     move $a0, $t3
     move $a1, $v0   # rotacion retornada segundo arg
+    
     jal rotate_ant
 
     /* paint_panel */
-    addu $t3, $fp, p_frame_2arg
+    lw $t3, p_frame_2arg($fp)
 #    move $a1, p_frame_2arg($fp) # grid segundo arg. ant sigue siendo primer arg
     move $a1, $t3
     addu $t3, $fp, p_frame_3arg
+    lw $t3, p_frame_3arg($fp)
 #    move $a2, p_frame_3arg($fp) # palette tercer arg
     move $a2, $t3
     move $a3, $t0   # numero iteracion cuarto arg
+    
     jal paint_panel
 
     jal move_ant    # ant sigue siendo primer arg y grid el segundo
 
-    addu $t0, $t0, 1    # Incremento contador
-    beq $t0, $t1, end_paint
+    addi $s7, $s7, 1    # Incremento contador
+    beq $s7, $v1, end_paint
     b paint_loop
 
 end_paint:
-    addu $t3, $fp, p_frame_4arg
+    lw $t3, p_frame_4arg($fp)
     #move $a3, p_frame_4arg($fp) # Vuelvo a poner rules en $a3
     move $a3, $t3
 
-    addu $t3, $fp, p_frame_2arg
+    lw $t3, p_frame_2arg($fp)
 #    move $v0, p_frame_2arg($fp) # Valor de retorno es grid
     move $v0, $t3
 
