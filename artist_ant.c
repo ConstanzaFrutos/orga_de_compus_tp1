@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 
 #include "ant_engine.h"
 #include "artist_ant.h"
@@ -56,7 +57,9 @@ static colour_t get_colour(char c);
 int
 main(int argc, char **argv)
 {
-  static struct option long_options[] = {
+    clock_t t;
+    t = clock();
+    static struct option long_options[] = {
     {"grid",  1, 0, 'g'},
     {"palette", 1, 0, 'p'},
     {"rules",  1, 0, 'r'},
@@ -157,6 +160,10 @@ main(int argc, char **argv)
   /* Libero memoria pedida en ant_engine */
   palette_destroy(palette);
   free(rules);
+  t = clock() - t;
+  double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+
+  printf("Programa se ejecuto en %f segundos.\n", time_taken);
   return 0;
 }
 
