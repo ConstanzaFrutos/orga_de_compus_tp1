@@ -16,6 +16,10 @@
 
 #define MASCARA_OFFSET 0x3f
 
+#define RESET_COLOR    "\x1b[0m"
+#define ROJO_T     "\x1b[31m"
+#define VERDE_T        "\x1b[32m"
+
 typedef struct memoria {
 	unsigned char* direcciones[CANTIDAD_DIRECCIONES];
 } memoria_t;
@@ -254,7 +258,12 @@ void print_cache(){
 				                         cache->sets[i]->bloques[j]->v,
 				                         cache->sets[i]->bloques[j]->orden);
 			for (int k=0; k<32; ++k){
-				printf("|%i|", *cache->sets[i]->bloques[j]->direcciones[k]);
+				if (cache->sets[i]->latest == j && *cache->sets[i]->bloques[j]->direcciones[k] != 0)
+					printf(VERDE_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
+				else if (*cache->sets[i]->bloques[j]->direcciones[k] != 0)
+					printf(ROJO_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
+				else
+					printf("|%i|", *cache->sets[i]->bloques[j]->direcciones[k]);
 			}
 			printf("\n");
 		}
@@ -264,9 +273,12 @@ void print_cache(){
 
 void print_memoria(){
 	for (int i=0; i<CANTIDAD_DIRECCIONES; ++i){
-		printf("|%i|", *memoria->direcciones[i]);
+		if (*memoria->direcciones[i] != 0)
+			printf(ROJO_T "|%i|" RESET_COLOR, *memoria->direcciones[i]);
+		else 
+			printf("|%i|", *memoria->direcciones[i]);
 	}
 	printf("\n\n");
 }
 
-
+//printf(ROJO_T "La prueba falla.\n\n" RESET_COLOR);
