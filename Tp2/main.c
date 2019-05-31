@@ -11,10 +11,6 @@
 #define W "W"
 #define MR "MR"
 
-void print_cache(){
-	
-}
-
 bool is_flush_command(char* command){
 	if (strstr(command, FLUSH))
 		return true;
@@ -39,19 +35,20 @@ bool is_mr_command(char* command){
 	return false;
 }
 
-//return strstr(command, MR) ? true : false
-
-void parse_command(char* command, unsigned int *address, unsigned char *value){
-	char aux[10];
+void parse_w_command(char* command, unsigned int *address, unsigned char *value){
 	unsigned int n = 0;
-	sscanf(command, "%s %u, %u", aux, address, &n);
-	//printf("n:%u\n", n);
+	sscanf(command, "%*s %u, %u", address, &n);
 	*value = n;
-	//printf("%s, %u, %i\n", aux, *address, *value);
+	printf("%u, %i\n", *address, *value);
+}
+
+void parse_r_command(char* command, unsigned int *address){
+	sscanf(command, "%*s %u", address);
 }
 
 int main(int argc, char* argv[]){
 	init();
+	print_cache();
 
 	if (argc < 2)
 		printf("Falta el nombre del archivo.\n");
@@ -70,13 +67,19 @@ int main(int argc, char* argv[]){
 			if (is_flush_command(command)){
 				init();
 			} else if (is_r_command(command)){
-
+				unsigned int address;
+				parse_r_command(command, &address);
+				unsigned char value = read_byte(address);
+				printf("%c\n", value);
+				print_cache();
 			} else if (is_w_command(command)){
 				unsigned int address;
 				unsigned char value;
-				parse_command(command, &address, &value);
+				parse_w_command(command, &address, &value);
 				//printf("%u, %c\n", address, value);
 				write_byte(address, value);
+				print_cache();
+				print_memoria();
 			} else if (is_mr_command(command)){
 				float miss_rate = get_miss_rate();
 				printf("Miss rate: %.3f\n", miss_rate);

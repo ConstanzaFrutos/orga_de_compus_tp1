@@ -17,19 +17,19 @@
 #define MASCARA_OFFSET 0x3f
 
 typedef struct memoria {
-	unsigned char direcciones[CANTIDAD_DIRECCIONES];
+	unsigned char* direcciones[CANTIDAD_DIRECCIONES];
 } memoria_t;
 
 typedef struct bloque {
-	unsigned char direcciones[DIRECCIONES_POR_BLOQUE];
-	unsigned int tags[DIRECCIONES_POR_BLOQUE]; 
+	unsigned char* direcciones[DIRECCIONES_POR_BLOQUE];
+	unsigned int tag;
 	bool v;
 	unsigned int orden;
 } bloque_t;
 
 typedef struct set {
 	bloque_t* bloques[BLOQUES_POR_SET];
-	unsigned int latest;
+	int latest;
 	unsigned int oldest;
 } set_t;
 
@@ -52,21 +52,24 @@ void init(){
 
 	memoria = calloc(1, sizeof(memoria_t));
 	for (unsigned int i=0; i<CANTIDAD_DIRECCIONES; ++i){
-		memoria->direcciones[i] = 0;
+		memoria->direcciones[i] = calloc(1, sizeof(unsigned char));
 	}
 
 	cache = calloc(1, sizeof(cache_t));
 	for (unsigned int i=0; i<CANTIDAD_SETS; ++i){
 		cache->sets[i] = calloc(1, sizeof(set_t));
+		cache->sets[i]->oldest = 0;
+		cache->sets[i]->latest = -1;
 		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j){
 			cache->sets[i]->bloques[j] = calloc(1, sizeof(bloque_t));
+			for (int k=0; k<DIRECCIONES_POR_BLOQUE; k++)
+				cache->sets[i]->bloques[j]->direcciones[k] = calloc(1, sizeof(unsigned char));
 			cache->sets[i]->bloques[j]->v = false;
 			cache->sets[i]->bloques[j]->orden = 0;
 		}
 	}
 	cache->total_accesos = 0;
 	cache->misses = 0;
-	
 }
 
 //Pre: recibe una address como unsigned int
@@ -74,7 +77,7 @@ void init(){
 //mapea la dirección address.
 unsigned int get_offset(unsigned int address){
 	unsigned int offset = 0;
-	offset = address & 0x3f;
+	offset = address & 0x1f;
 	printf("off: %i\n", offset);
 
 	return offset;
@@ -85,16 +88,16 @@ unsigned int get_offset(unsigned int address){
 //mapea la dirección address.
 unsigned int find_set(unsigned int address){
 	unsigned int set = 0;
-	set = address & 0x1c0;
-	set = set >> 6;
+	set = address & 0xe0;
+	set = set >> 5;
 	printf("set: %i\n", set);
 	return set;
 }
 
 unsigned int get_tag(unsigned int address){
 	unsigned int tag = 0;
-	tag = address & 0xfe00;
-	tag = tag >> 9;
+	tag = address & 0xff00;
+	tag = tag >> 8;
 	printf("tag: %i\n", tag);
 
 	return tag;
@@ -122,14 +125,20 @@ unsigned int select_oldest(unsigned int setnum){
 //vía indicados en la memoria caché.
 //Post: Deja a la caché en el estado indicado.
 void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
-	bloque_t* bloque = NULL;
+	printf("Ad: %u, way: %u, set: %u\n", blocknum, way, set);
+
+	bloque_t* bloque = calloc(1, sizeof(bloque_t));
 	for (int i=0; i<DIRECCIONES_POR_BLOQUE; ++i){
-		bloque->direcciones[i] = memoria->direcciones[blocknum + i];	
+		bloque->direcciones[i] = calloc(1, sizeof(unsigned char));
+		*bloque->direcciones[i] = *memoria->direcciones[blocknum + i];
 	}
 	bloque->v = true;
-	bloque->orden = cache->sets[set]->latest + 1;
+	bloque->orden = (cache->sets[set]->latest + 1) % 4;
+	bloque->tag = get_tag(blocknum);
+	printf("tag %u\n", bloque->tag);
 
 	cache->sets[set]->bloques[way] = bloque;
+	cache->sets[set]->latest = way;
 }
 
 /*
@@ -140,13 +149,13 @@ void write_tocache(unsigned int address, unsigned char){
 }*/
 
 bool is_in_cache(unsigned int address){
-	unsigned int offset = get_offset(address);
+	//unsigned int offset = get_offset(address);
 	unsigned int idx = find_set(address);
 	unsigned int tag = get_tag(address);
 	int i = 0;
 	while (i<BLOQUES_POR_SET){
 		if (cache->sets[idx]->bloques[i]->v){
-			unsigned int other_tag = get_tag(cache->sets[idx]->bloques[i]->tags[offset]);
+			unsigned int other_tag = cache->sets[idx]->bloques[i]->tag;
 			if (tag == other_tag){
 				return true;
 			}
@@ -155,6 +164,14 @@ bool is_in_cache(unsigned int address){
 	}
 
 	return false;
+}
+
+bool set_is_full(unsigned int set){
+	for (int i=0; i<BLOQUES_POR_SET; ++i){
+		if (!cache->sets[set]->bloques[i]->v)
+			return false;
+	}
+	return true;
 }
 
 //Pre: Recibe una dirección.
@@ -170,10 +187,12 @@ unsigned char read_byte(unsigned int address){
 	int i = 0;
 	while (i<BLOQUES_POR_SET && !found){
 		if (cache->sets[idx]->bloques[i]->v){
-			unsigned int other_tag = get_tag(cache->sets[idx]->bloques[i]->tags[offset]);
+			unsigned int other_tag = cache->sets[idx]->bloques[i]->tag;
 			if (tag == other_tag){
+				printf("Encontre\n");
 				found = true;
-				return cache->sets[idx]->bloques[i]->direcciones[offset];
+				cache->total_accesos ++;
+				return *cache->sets[idx]->bloques[i]->direcciones[offset];
 			}
 		}
 		++i;
@@ -181,11 +200,16 @@ unsigned char read_byte(unsigned int address){
 	cache->total_accesos ++;
 	if (!found)
 		cache->misses ++;
-
-	unsigned int way = cache->sets[idx]->oldest;
+	unsigned int way;
+	if (set_is_full(idx)){
+		way = cache->sets[idx]->oldest;
+	} else {
+		way = cache->sets[idx]->latest + 1;
+	}
+	
 	read_tocache(address, way, idx);
 
-	return cache->sets[idx]->bloques[way]->direcciones[offset];
+	return *cache->sets[idx]->bloques[way]->direcciones[offset];
 }
 
 //Pre: Recibe una dirección y un valor.
@@ -201,10 +225,10 @@ void write_byte(unsigned int address, unsigned char value){
 	bool found = false;
 	while (i<BLOQUES_POR_SET && !found){
 		if (cache->sets[idx]->bloques[i]->v){
-			unsigned int other_tag = get_tag(cache->sets[idx]->bloques[i]->tags[offset]);
+			unsigned int other_tag = cache->sets[idx]->bloques[i]->tag;
 			if (tag == other_tag){
 				found = true;
-				cache->sets[idx]->bloques[i]->direcciones[offset] = value;
+				*cache->sets[idx]->bloques[i]->direcciones[offset] = value;
 			}
 		}
 		++i;
@@ -212,7 +236,7 @@ void write_byte(unsigned int address, unsigned char value){
 	cache->total_accesos ++;
 	if (!found)
 		cache->misses ++;
-	memoria->direcciones[address] = value;
+	*memoria->direcciones[address] = value;
 }
 
 //Post: devuelve el porcentaje de misses desde que se inicializó la caché.
@@ -221,5 +245,28 @@ float get_miss_rate(){
 	return miss_rate;
 }
 
+void print_cache(){
+	for (int i=0; i<8; ++i){
+		printf("set %i\n", i);
+		for (int j=0; j<4; ++j){
+			printf("Bloque %i\n", j);
+			printf("t: %u|v: %i|o: %u ", cache->sets[i]->bloques[j]->tag, 
+				                         cache->sets[i]->bloques[j]->v,
+				                         cache->sets[i]->bloques[j]->orden);
+			for (int k=0; k<32; ++k){
+				printf("|%i|", *cache->sets[i]->bloques[j]->direcciones[k]);
+			}
+			printf("\n");
+		}
+		printf("\n\n");
+	}
+}
+
+void print_memoria(){
+	for (int i=0; i<CANTIDAD_DIRECCIONES; ++i){
+		printf("|%i|", *memoria->direcciones[i]);
+	}
+	printf("\n\n");
+}
 
 

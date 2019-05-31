@@ -49,4 +49,8 @@ void write_byte(unsigned int address, unsigned char value);
 //Post: devuelve el porcentaje de misses desde que se inicializó la caché.
 float get_miss_rate();
 
+void print_cache();
+
+void print_memoria();
+
 #endif //CACHE_H
