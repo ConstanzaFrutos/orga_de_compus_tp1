@@ -39,8 +39,8 @@ typedef struct set {
 
 typedef struct cache {
 	set_t* sets[CANTIDAD_SETS];
-	unsigned int total_accesos;
-	unsigned int misses;
+	float total_accesos;
+	float misses;
 } cache_t;
 
 //memorias
@@ -130,11 +130,11 @@ unsigned int select_oldest(unsigned int setnum){
 //Post: Deja a la caché en el estado indicado.
 void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
 	printf("Ad: %u, way: %u, set: %u\n", blocknum, way, set);
-
+	int inicio = blocknum - blocknum % BLOQUES_POR_SET;
 	bloque_t* bloque = calloc(1, sizeof(bloque_t));
 	for (int i=0; i<DIRECCIONES_POR_BLOQUE; ++i){
 		bloque->direcciones[i] = calloc(1, sizeof(unsigned char));
-		*bloque->direcciones[i] = *memoria->direcciones[blocknum + i];
+		*bloque->direcciones[i] = *memoria->direcciones[inicio + i];
 	}
 	bloque->v = true;
 	bloque->orden = (cache->sets[set]->latest + 1) % 4;
@@ -145,29 +145,26 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
 	cache->sets[set]->latest = way;
 }
 
-/*
-//Pre:
-//Post:
+//Cuando el set esta lleno y se debe pisar el bloque mas viejo lo 
+//escribe en memoria. 
 void write_tocache(unsigned int address, unsigned char){
 
-}*/
+}
 
-bool is_in_cache(unsigned int address){
-	//unsigned int offset = get_offset(address);
-	unsigned int idx = find_set(address);
+//Devuelve -1 si no lo encuentra
+int get_way(unsigned int address, unsigned int idx){
 	unsigned int tag = get_tag(address);
 	int i = 0;
 	while (i<BLOQUES_POR_SET){
 		if (cache->sets[idx]->bloques[i]->v){
 			unsigned int other_tag = cache->sets[idx]->bloques[i]->tag;
-			if (tag == other_tag){
-				return true;
-			}
+			if (tag == other_tag)
+				return i;
 		}
 		++i;
 	}
 
-	return false;
+	return -1;
 }
 
 bool set_is_full(unsigned int set){
@@ -186,30 +183,18 @@ bool set_is_full(unsigned int set){
 unsigned char read_byte(unsigned int address){
 	unsigned int offset = get_offset(address);
 	unsigned int idx = find_set(address);
-	unsigned int tag = get_tag(address);
-	bool found = false;
-	int i = 0;
-	while (i<BLOQUES_POR_SET && !found){
-		if (cache->sets[idx]->bloques[i]->v){
-			unsigned int other_tag = cache->sets[idx]->bloques[i]->tag;
-			if (tag == other_tag){
-				printf("Encontre\n");
-				found = true;
-				cache->total_accesos ++;
-				return *cache->sets[idx]->bloques[i]->direcciones[offset];
-			}
-		}
-		++i;
-	}
 	cache->total_accesos ++;
-	if (!found)
+	int i = get_way(address, idx);
+	if (i != -1)
+		return *cache->sets[idx]->bloques[i]->direcciones[offset];
+	else 
 		cache->misses ++;
+
 	unsigned int way;
-	if (set_is_full(idx)){
+	if (set_is_full(idx))
 		way = cache->sets[idx]->oldest;
-	} else {
+	else
 		way = cache->sets[idx]->latest + 1;
-	}
 	
 	read_tocache(address, way, idx);
 
@@ -224,22 +209,14 @@ unsigned char read_byte(unsigned int address){
 void write_byte(unsigned int address, unsigned char value){
 	unsigned int offset = get_offset(address);
 	unsigned int idx = find_set(address);
-	unsigned int tag = get_tag(address);
-	int i = 0;
-	bool found = false;
-	while (i<BLOQUES_POR_SET && !found){
-		if (cache->sets[idx]->bloques[i]->v){
-			unsigned int other_tag = cache->sets[idx]->bloques[i]->tag;
-			if (tag == other_tag){
-				found = true;
-				*cache->sets[idx]->bloques[i]->direcciones[offset] = value;
-			}
-		}
-		++i;
-	}
+
 	cache->total_accesos ++;
-	if (!found)
+	int i = get_way(address, idx);
+	if (i != -1)
+		*cache->sets[idx]->bloques[i]->direcciones[offset] = value;
+	else 
 		cache->misses ++;
+	
 	*memoria->direcciones[address] = value;
 }
 
@@ -250,7 +227,7 @@ float get_miss_rate(){
 }
 
 void print_cache(){
-	for (int i=0; i<8; ++i){
+	for (int i=0; i<2; ++i){
 		printf("set %i\n", i);
 		for (int j=0; j<4; ++j){
 			printf("Bloque %i\n", j);
@@ -258,7 +235,7 @@ void print_cache(){
 				                         cache->sets[i]->bloques[j]->v,
 				                         cache->sets[i]->bloques[j]->orden);
 			for (int k=0; k<32; ++k){
-				if (cache->sets[i]->latest == j && *cache->sets[i]->bloques[j]->direcciones[k] != 0)
+				if (cache->sets[i]->latest == j )
 					printf(VERDE_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
 				else if (*cache->sets[i]->bloques[j]->direcciones[k] != 0)
 					printf(ROJO_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
@@ -272,7 +249,7 @@ void print_cache(){
 }
 
 void print_memoria(){
-	for (int i=0; i<CANTIDAD_DIRECCIONES; ++i){
+	for (int i=0; i<80; ++i){
 		if (*memoria->direcciones[i] != 0)
 			printf(ROJO_T "|%i|" RESET_COLOR, *memoria->direcciones[i]);
 		else 
@@ -281,4 +258,4 @@ void print_memoria(){
 	printf("\n\n");
 }
 
-//printf(ROJO_T "La prueba falla.\n\n" RESET_COLOR);
+

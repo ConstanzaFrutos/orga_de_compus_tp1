@@ -11,6 +11,12 @@
 #define W "W"
 #define MR "MR"
 
+bool is_address_valid(unsigned int address){
+	if (address < 32768)
+		return true;
+	return false;
+}
+
 bool is_flush_command(char* command){
 	if (strstr(command, FLUSH))
 		return true;
@@ -48,7 +54,6 @@ void parse_r_command(char* command, unsigned int *address){
 
 int main(int argc, char* argv[]){
 	init();
-	print_cache();
 
 	if (argc < 2)
 		printf("Falta el nombre del archivo.\n");
@@ -69,20 +74,27 @@ int main(int argc, char* argv[]){
 			} else if (is_r_command(command)){
 				unsigned int address;
 				parse_r_command(command, &address);
-				unsigned char value = read_byte(address);
-				printf("%c\n", value);
-				print_cache();
+				if (is_address_valid(address)){
+					unsigned char value = read_byte(address);
+					printf("Value: %c\n", value);
+					print_cache();
+				} else{
+					perror("Comando invalido\n");
+				}
 			} else if (is_w_command(command)){
 				unsigned int address;
 				unsigned char value;
 				parse_w_command(command, &address, &value);
-				//printf("%u, %c\n", address, value);
-				write_byte(address, value);
-				print_cache();
-				print_memoria();
+				if (is_address_valid(address)){
+					write_byte(address, value);
+					print_cache();
+					print_memoria();
+				} else {
+					perror("Comando invalido\n");
+				}				
 			} else if (is_mr_command(command)){
 				float miss_rate = get_miss_rate();
-				printf("Miss rate: %.3f\n", miss_rate);
+				printf("Miss rate: %f\n", miss_rate);
 			} else {
 				perror("Comando invalido\n");
 			}
