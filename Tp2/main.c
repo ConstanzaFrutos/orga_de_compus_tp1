@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
 				parse_r_command(command, &address);
 				if (is_address_valid(address)){
 					unsigned char value = read_byte(address);
-					printf("Value: %c\n", value);
+					printf("Value: %i\n", value);
 					print_cache();
 				} else{
 					perror("Comando invalido\n");

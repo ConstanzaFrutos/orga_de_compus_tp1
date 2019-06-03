@@ -34,7 +34,6 @@ typedef struct bloque {
 typedef struct set {
 	bloque_t* bloques[BLOQUES_POR_SET];
 	int latest;
-	unsigned int oldest;
 } set_t;
 
 typedef struct cache {
@@ -62,7 +61,6 @@ void init(){
 	cache = calloc(1, sizeof(cache_t));
 	for (unsigned int i=0; i<CANTIDAD_SETS; ++i){
 		cache->sets[i] = calloc(1, sizeof(set_t));
-		cache->sets[i]->oldest = 0;
 		cache->sets[i]->latest = -1;
 		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j){
 			cache->sets[i]->bloques[j] = calloc(1, sizeof(bloque_t));
@@ -113,10 +111,11 @@ unsigned int get_tag(unsigned int address){
 //correspondiente de los metadatos de los bloques del conjunto.
 unsigned int select_oldest(unsigned int setnum){
 	unsigned int way = 0;
-	unsigned int orden_mas_viejo = 10;
+	unsigned int orden_mas_viejo = 0;
 	
 	for (int i=0; i<BLOQUES_POR_SET; ++i){
-		if (cache->sets[setnum]->bloques[i]->orden < orden_mas_viejo){
+		if (cache->sets[setnum]->bloques[i]->orden <= orden_mas_viejo){
+			orden_mas_viejo = cache->sets[setnum]->bloques[i]->orden;
 			way = i;
 		}
 	}
@@ -143,12 +142,6 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
 
 	cache->sets[set]->bloques[way] = bloque;
 	cache->sets[set]->latest = way;
-}
-
-//Cuando el set esta lleno y se debe pisar el bloque mas viejo lo 
-//escribe en memoria. 
-void write_tocache(unsigned int address, unsigned char){
-
 }
 
 //Devuelve -1 si no lo encuentra
@@ -187,18 +180,25 @@ unsigned char read_byte(unsigned int address){
 	int i = get_way(address, idx);
 	if (i != -1)
 		return *cache->sets[idx]->bloques[i]->direcciones[offset];
-	else 
+	else {
+		printf("miss\n");
 		cache->misses ++;
+	}
 
 	unsigned int way;
 	if (set_is_full(idx))
-		way = cache->sets[idx]->oldest;
+		way = select_oldest(idx);
 	else
-		way = cache->sets[idx]->latest + 1;
+		way = (cache->sets[idx]->latest + 1) % BLOQUES_POR_SET;
 	
 	read_tocache(address, way, idx);
 
 	return *cache->sets[idx]->bloques[way]->direcciones[offset];
+}
+
+//Escribe en memoria.
+void write_tocache(unsigned int address, unsigned char value){
+	*memoria->direcciones[address] = value;
 }
 
 //Pre: Recibe una dirección y un valor.
@@ -214,10 +214,12 @@ void write_byte(unsigned int address, unsigned char value){
 	int i = get_way(address, idx);
 	if (i != -1)
 		*cache->sets[idx]->bloques[i]->direcciones[offset] = value;
-	else 
+	else {
+		printf("miss\n");
 		cache->misses ++;
+	}
 	
-	*memoria->direcciones[address] = value;
+	write_tocache(address, value);
 }
 
 //Post: devuelve el porcentaje de misses desde que se inicializó la caché.
@@ -227,7 +229,7 @@ float get_miss_rate(){
 }
 
 void print_cache(){
-	for (int i=0; i<2; ++i){
+	for (int i=0; i<5; ++i){
 		printf("set %i\n", i);
 		for (int j=0; j<4; ++j){
 			printf("Bloque %i\n", j);
@@ -249,7 +251,7 @@ void print_cache(){
 }
 
 void print_memoria(){
-	for (int i=0; i<80; ++i){
+	for (int i=0; i<3000; ++i){
 		if (*memoria->direcciones[i] != 0)
 			printf(ROJO_T "|%i|" RESET_COLOR, *memoria->direcciones[i]);
 		else 

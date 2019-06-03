@@ -1,0 +1,240 @@
+\documentclass[a4paper, 10pt, twoside, notitlepage]{article}
+% idioma
+\usepackage[spanish]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{youngtab}
+
+\usepackage{float}
+
+\usepackage{graphicx}
+
+% graficos
+%\usepackage[pdftex]{graphicx}
+%\usepackage{wrapfig}
+
+%\usepackage{listings}
+%\lstset{language=C,basicstyle=\small}
+
+%\usepackage{epic,eepic}
+% estilo
+\usepackage[footnotesize]{caption}
+\usepackage[outer=2cm,inner=4cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{lipsum}
+
+\usepackage{color,hyperref}
+\definecolor{black}{rgb}{0.0,0.0,0.0}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.3}
+
+\hypersetup{colorlinks,breaklinks,
+            linkcolor=black,urlcolor=darkblue,
+            anchorcolor=darkblue,citecolor=darkblue}
+
+% matematica
+\usepackage{amsmath} \usepackage{amsfonts} \usepackage{amssymb}
+
+
+\title{\textbf{Trabajo Práctico 2\\Memoria Caché} \\}
+
+\vspace{5cm}
+\author{ \\
+         Sebastian Ignacio Penna, \textit{Padrón 98752} \\
+          \texttt{ sebapenna19@gmail.com }       \\
+		  [2.5ex]
+         Constanza M Frutos Ramos, \textit{Padrón 96728}     \\
+          \texttt{constanza.frutos.ramos@gmail.com}                      \\ 
+		  [2.5ex]
+		 \\
+         \normalsize{1er. Cuatrimestre de 2019}            \\
+         \normalsize{86.37 / 66.20 Organización de Computadoras $-$ Práctica Jueves} \\
+         \normalsize{Facultad de Ingeniería, Universidad de Buenos Aires} 
+       }
+
+\date{}
+
+\begin{document}
+
+\maketitle
+% \thispagestyle{empty}   % quita el número en la primer página
+
+
+% Es un breve resumen de lo que vamos a leer con mayor profundidad en las secciones posteriores, tiene que resaltar lo más importante.
+\begin{abstract}
+El trabájo ṕráctico consta de la realización de una memoria caché con ciertas caracteristicas permitiendo asentar los conocimientos vistos en clase. 
+\end{abstract}
+
+%\tableofcontents
+% 
+\newpage
+% 
+
+\pagestyle{fancy}
+\fancyhead{}
+\fancyfoot{}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\renewcommand{\headrulewidth}{0.4pt}
+%\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[LE]{\nouppercase \rightmark}
+\fancyhead[RE, LO]{\bf \thepage}
+\fancyhead[RO]{\nouppercase \rightmark}
+\fancyfoot[C]{ }
+\maketitle
+%genera el indice - compilar dos veces
+\setcounter{page}{1}
+\tableofcontents
+\newpage
+
+\parskip 7.2pt
+%Distinto al resumen, se dice cual es el objetivo principal y se hace un resumen de cada parte que aparece a continuación. 
+\section{Introducción}
+El objetivo principal de trabajo es tener una primer experiencia en el desarrollo de un programa utilizando funciones creadas en assembly MIPS 32, dentro un código C.
+
+El problema consiste en completar un conjuntos de funciones de las cuales se nos entregó la firma, primero en código C y luego traduciendo las mismas con instrucciones de MIPS 32, como se mencionó previamente. De ésta manera se podrán estudiar las ventajas y posibles optimizaciones que tenga un lenguaje frente al otro.
+
+También se deberán estudiar los distintos stacks generados por las funciones, información clave para el desarrollo de las mismas en assembly y el manejo de direcciones.
+
+El conjunto de funciones a desarrollar están basadas en el problema de \textbf{"La hormiga artista"}. En éste se tiene una hormiga posicionada sobre un área de dos dimensiones, dentro de la cuál la misma se podrá mover. Los movimientos de la hormiga están definidos por un conjunto de reglas enunciadas cuando se ejecuta el programa, ya que la misma se mueve de acuerdo al color que contiene la posición sobre la que se encuentra. 
+
+Nuestra tarea consiste en resolver ésta parte del problema: realizar todos los movimientos e ir pintando el tablero siguiendo la tira de colores indicada en la terminal.
+
+
+%Una de las secciones más importantes del informe. Aquí se explaya todo lo realizado, problemas encontrados y soluciones propuestas con variantes y métricas.
+
+\section{Diseño e Implementación}
+
+\subsection{Análisis del problema}
+Se pide simular una memoria caché con las siguientes especificaciones:\\
+\begin{itemize}
+    \item Asociativa por conjuntos de cuatro vías. (4WSA)
+    \item 2KB de capacidad. (CS)
+    \item Bloques de 64B. (BS)
+    \item Política de reemplazo FIFO.
+    \item Política de escritura WT/¬WA.
+\end{itemize}
+A su vez el espacio de direcciones se asume de 16 bits, teniendo asi una memoria principal 64KB.\\
+\\ 
+Lo primero que se hace es analizar el problema. Dado que la caché tiene un tamaño de 2KB, cada bloque es de 64B y esta separada en 4 vías, se obtiene la cantidad de bloques de cada caché mediante la siguiente operación:\\
+n° bloques = CS/(BS*n°vias)
+Donde CS = 2KB = 2*2\^10 = 2\^11
+BS = 64B = 2\^6
+y n°vías = 4
+Entonces: n*bloques por cache = 2\^11 / (2\^6 * 2\^2) = 8
+Hay 8 bloques por caché, esto quiere decir que el índice va de 0 a 7, por lo cual se requieren de 3 bits para direccionarlo. El offset se obtiene conociendo el tamaño del bloque, se requieren 6 bits para direccionarlo. Y dado que las direcciones de memoria son de 16 bits, los restantes son de tag, es decir 7 bits. 
+
+
+% Sub sección optativa, sólo es un ejemplo, como se resuelve la entrada de arguemtos, como se parsearon y analizaron las opciones válidas e inválidas.
+\subsection{Análisis de la línea de comandos}
+Las opciones válidas ingresadas por línea de comandos como fue mencionado, pueden ser:
+%Formas de invocar a la aplicación a desarrollar.
+La aplicación se ejecuta haciendo uso de la línea de comando mostrada a continuación:
+
+\begin{verbatim}
+./tp1 -g <dimensions> -p <colors> -r <rules> -t <n>
+\end{verbatim}
+
+Los parámetros se explican a continuación:
+
+\begin{itemize}
+    \item -g --grid wxh: se introduce el tamaño de la matriz a usar (width y height).
+    \item -p --palette: cualquier combinación de los siguientes colores R\textbar\textbar G\textbar\textbar B\textbar\textbar Y\textbar\textbar N\textbar\textbar W, separados por el carácter \textbar\textbar.
+    
+    \item -r --rules: combinación de las letras L y R separadas por el carácter \textbar\textbar. Tiene que haber igual cantidad de reglas que de colores, cada una de estas corresponde a un color.
+    \item -n --times: la cantidad de iteraciones del programa.
+    \item -h --help: se imprimen los posibles comandos a ejecutar.
+    \item -v --verbose: version number.
+\end{itemize}
+
+%Explica los códigos de salida de la aplicación, probarlos en consola con echo $?
+
+
+\newpage
+%En esta sub sección se debe explicar con palabras las funciones más importantes que permitieron resolver el trabajo práctico.
+\subsection{Desarrollo del Código Fuente}
+Los archivos con el código fuente que se utilizarán para la compilación y ejecución del programa son los siguientes:
+
+\begin{enumerate}
+ \item \textbf{ant\_constants}: Contiene todas las constantes utilizadas en los distintos archivos;
+ \item \textbf{ant\_engine\_full}: Contiene \textbf{todas} las funciones cuyas firmas se encuentran declaradas en ant\_engine.h definidas en C. Éste será utilizado para compilar el código tan solo en C
+ \item \textbf{ant\_engine}: Contiene las funciones declaradas en ant\_engine.h al igual que ant\_engine\_full, excepto aquellas que sean necesarias para la ejecución de \textit{paint}, la cuál será deifnida en código assembly;
+ \item \textbf{artist\_ant}: Contiene toda la lógica relacionada al main, inicialización y obtención de comandos dentro del programa. Las únicas modificaciones realizadas sobre el código entregado por la cátedra fue agregar destructores/free para liberar la memoria asignada en la ejecución del programa;
+ \item \textbf{my\_assembly}: Contiene todo el código necesario para realizar la función \textit{paint} en assembly MIPS 32.
+\end{enumerate}
+
+A continuación se explicarán en detalle cada una de las funciones creadas, tanto en C cómo en assembly
+
+\subsubsection{create\_palette}
+Ésta función guarda en el memoria dinámica un struct palette\_t. Para definir su tamaño se itera sobre el char * brindado como parámetro que contiene el argumento de la paleta de colores indicado al ejecutar el programa y se cuenta la cantidad de veces que aparece el carácter \textbar, sabiendo que se tiene al menos un color.
+
+\subsubsection{make\_palette}
+Una vez creada la paleta se utiliza ésta función, donde se itera nuevamente sobre un arreglo de char. Se realiza un switch donde cada case contiene una opción de color posible, y en caso de ser una de éstas se la setea sobre el arreglo de int que tiene la paleta. Esta acción se repite para cada carácter sobre el arreglo.
+
+\subsubsection{make\_rules}
+Ésta función tiene exactamente la misma lógica que make\_palette, pero en éste caso el arreglo de char tiene las rotaciones a realizar para cada color y el switch tendrá tán sólo las opciones left y right.
+
+\subsubsection{paint (C)}
+Para pintar la grilla se crea un ciclo de la cantidad de iteraciones indicada al iniciar el programa. Dentro de éste se llama a las siguientes funciones:
+
+
+\section{Proceso de Compilación}
+
+Se usa gcc para compilar. Para compilar tán sólo con código c el comando utilizado es el siguiente:
+
+\begin{verbatim}
+gcc ant_constants.h ant_engine.h ant_engine_full.c artist_ant.h artist_ant.c -o tp1    
+\end{verbatim}
+
+Mientras que en el caso de querer utilizar las funciones definidas en assembly se debe compilar mediante:
+
+\begin{verbatim}
+gcc my_assembly.S my_assembly.h ant_constants.h ant_engine.h ant_engine.c  
+artist_ant.h artist_ant.c -o tp1
+\end{verbatim}
+
+%Casos de prueba que permiten verificar exhaustivamente el uso de la aplicación y su correctitud.
+\section{Casos de Prueba}
+
+\subsection{Prueba1}
+
+\subsection{Prueba2}
+
+\subsection{Prueba3}
+
+\begin{verbatim}
+W 128, 1    //El bloque no se encuentra, escribe en memoria y no trae el bloque. Hay un miss. Se pone un 1 en la dirección 128. 
+W 129, 2    //El bloque no se encuentra, escribe en memoria y no trae el bloque. Hay un miss.  Se pone un 2 en la dirección 129.
+W 130, 3    //El bloque no se encuentra, escribe en memoria y no trae el bloque. Hay un miss.  Se pone un 3 en la dirección 130.
+W 131, 4    //El bloque no se encuentra, escribe en memoria y no trae el bloque. Hay un miss.  Se pone un 4 en la dirección 131.
+R 1152      //El bloque no se encuentra en caché, hay un miss. Lo carga en caché.
+R 2176      //El bloque no se encuentra en caché, hay un miss. Lo carga en caché.
+R 3200      //El bloque no se encuentra en caché, hay un miss. Lo carga en caché.
+R 4224      //El bloque no se encuentra en caché, hay un miss. Lo carga en caché.
+R 128       //El bloque no se encuentra en caché, hay un miss. Lo carga en caché.
+R 129       //El bloque se encuentra en caché, es el que se cargó anteriormente.
+R 130       //El bloque se encuentra en caché, es el que se cargó anteriormente.
+R 131       //El bloque se encuentra en caché, es el que se cargó anteriormente.
+MR          //mr=9/13
+\end{verbatim}
+
+En las primeras 4 lecturas los bloques van al mismo set. Esto significa que cuando se lee el primer bloque, se coloca en la vía 0, el correspondiente a la dirección 2176 en la vía 1, el el correrpondiente a la dirección 3280 en la vía 2, y el el correrpondiente a la dirección 4224 en la vía 3. Luego, al leer el bloque que contiene a la dirección 128 se reemplaza el mas "viejo" (por ser la política de reemplazo FIFO) por el nuevo. Quedando así el nuevo bloque en la vía 0. Las próximas 3 lecturas dan hit dado que el bloque ya esta en caché.
+
+
+\subsection{Funcionamiento de la aplicación}
+
+\subsubsection{Valgrind}
+
+%Se deben resaltar con fundamentos reales la importancia y los aspectos más relevantes en la realización del trabajo práctico.
+\section{Conclusión}
+
+
+\vspace{.5cm}
+%Referencias o recursos utilizados durante la investigación para la resolución del trabajo práctico 
+\begin{thebibliography}{5}
+ \bibitem{valgrind} Valgrind, valgrind-3.6.0.SVN-Debian, \url{http://valgrind.org/}
+\end{thebibliography}
+
+ 
+ %Incluir todo el código del trabajo práctico.
+\newpage
+
+\end{document}
+

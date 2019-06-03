@@ -30,7 +30,7 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set);
 
 //Pre:
 //Post:
-void write_tocache(unsigned int address, unsigned char);
+void write_tocache(unsigned int address, unsigned char value);
 
 //Pre: Recibe una dirección.
 //Busca el valor del byte correspondiente a la posición 
