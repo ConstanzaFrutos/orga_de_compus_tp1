@@ -12,7 +12,7 @@
 #define MR "MR"
 
 bool is_address_valid(unsigned int address){
-	if (address < 32768)
+	if (address < CANTIDAD_DIRECCIONES)
 		return true;
 	return false;
 }
@@ -101,30 +101,8 @@ int main(int argc, char* argv[]){
 		}
 	}
 
+	free_resources();
 	fclose(file);
 
 	return 0;
 }
-
-
-
-/*
-FLUSH
-R ddddd
-W ddddd, vvv
-MR
-El comando “FLUSH” se ejecuta llamando a la función init(). Repre-
-senta el vaciado del caché.
-Los comandos de la forma “R ddddd” se ejecutan llamando a la función
-read byte(ddddd) e imprimiendo el resultado.
-Los comandos de la forma “W ddddd, vvv” se ejecutan llamando a la
-función write byte(unsigned int ddddd, char vvv) e imprimien-
-do el resultado.
-El comando “MR” se ejecuta llamando a la función get miss rate() e
-imprimiendo el resultado.
-El programa deberá chequear que las lı́neas del archivo correspondan a un
-comando con argumentos dentro del rango estipulado, o de lo contrario
-estar vacı́as. En caso de que una lı́nea tenga otra cosa que espacios blancos
-y no tenga un comando válido, se deberá imprimir un mensaje de error
-informativo.
-*/

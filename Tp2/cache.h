@@ -1,6 +1,8 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#define CANTIDAD_DIRECCIONES 32768 //32KB
+
 //Post: La memoria principal simulada queda 
 //inicializada en 0, los bloques de caché como 
 //inválidos y la tasa de misses en 0.
@@ -9,7 +11,7 @@ void init();
 //Pre: recibe una address como unsigned int
 //Post: devuelve el offset del byte del bloque de memoria al que 
 //mapea la dirección address.
-unsigned int get_offset (unsigned int address);
+unsigned int get_offset(unsigned int address);
 
 //Pre: recibe una address como unsigned int
 //Post: devuelve el conjunto de caché al que
@@ -48,6 +50,8 @@ void write_byte(unsigned int address, unsigned char value);
 
 //Post: devuelve el porcentaje de misses desde que se inicializó la caché.
 float get_miss_rate();
+
+void free_resources();
 
 void print_cache();
 

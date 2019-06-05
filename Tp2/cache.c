@@ -9,11 +9,7 @@
 #define BLOQUES_POR_SET 4
 #define BITS_OFFSET 6
 #define BITS_INDEX 3
-#define BITS_TAG 7
 #define ESPACIO_DIRECCIONES 16 //[b]
-#define CANTIDAD_DIRECCIONES 32768 //32KB
-
-#define MASCARA_OFFSET 0x3f
 
 #define RESET_COLOR    "\x1b[0m"
 #define ROJO_T     "\x1b[31m"
@@ -79,7 +75,6 @@ void init(){
 unsigned int get_offset(unsigned int address){
 	unsigned int offset = 0;
 	offset = address & 0x3f;
-	printf("off: %i\n", offset);
 
 	return offset;
 }
@@ -90,16 +85,15 @@ unsigned int get_offset(unsigned int address){
 unsigned int find_set(unsigned int address){
 	unsigned int set = 0;
 	set = address & 0x1c0;
-	set = set >> 6;
-	printf("set: %i\n", set);
+	set = set >> BITS_OFFSET;
+
 	return set;
 }
 
 unsigned int get_tag(unsigned int address){
 	unsigned int tag = 0;
 	tag = address & 0xfe00;
-	tag = tag >> 7;
-	printf("tag: %i\n", tag);
+	tag = tag >> (BITS_OFFSET + BITS_INDEX);
 
 	return tag;
 }
@@ -127,7 +121,6 @@ unsigned int select_oldest(unsigned int setnum){
 //vía indicados en la memoria caché.
 //Post: Deja a la caché en el estado indicado.
 void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
-	printf("Ad: %u, way: %u, set: %u\n", blocknum, way, set);
 	int inicio = blocknum - blocknum % BLOQUES_POR_SET;
 	bloque_t* bloque = calloc(1, sizeof(bloque_t));
 	for (int i=0; i<TAMANIO_BLOQUE; ++i){
@@ -137,7 +130,6 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
 	bloque->v = true;
 	bloque->orden = (cache->sets[set]->latest + 1) % 4;
 	bloque->tag = get_tag(blocknum);
-	printf("tag %u\n", bloque->tag);
 
 	cache->sets[set]->bloques[way] = bloque;
 	cache->sets[set]->latest = way;
@@ -179,10 +171,8 @@ unsigned char read_byte(unsigned int address){
 	int i = get_way(address, idx);
 	if (i != -1)
 		return *cache->sets[idx]->bloques[i]->direcciones[offset];
-	else {
-		printf("miss\n");
+	else 
 		cache->misses ++;
-	}
 
 	unsigned int way;
 	if (set_is_full(idx))
@@ -213,10 +203,8 @@ void write_byte(unsigned int address, unsigned char value){
 	int i = get_way(address, idx);
 	if (i != -1)
 		*cache->sets[idx]->bloques[i]->direcciones[offset] = value;
-	else {
-		printf("miss\n");
+	else
 		cache->misses ++;
-	}
 	
 	write_tocache(address, value);
 }
@@ -227,6 +215,30 @@ float get_miss_rate(){
 	return miss_rate;
 }
 
+void free_memory(){
+	for (unsigned int i=0; i<CANTIDAD_DIRECCIONES; ++i){
+		free(memoria->direcciones[i]);
+	}
+	free(memoria);
+}
+
+void free_cache(){
+	for (unsigned int i=0; i<CANTIDAD_SETS; ++i){
+		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j){
+			for (int k=0; k<TAMANIO_BLOQUE; k++)
+				free(cache->sets[i]->bloques[j]->direcciones[k]);
+			free(cache->sets[i]->bloques[j]);
+		}
+		free(cache->sets[i]);
+	}
+	free(cache);
+}
+
+void free_resources(){
+	free_memory();
+	free_cache();
+}
+
 void print_cache(){
 	for (int i=0; i<5; ++i){
 		printf("set %i\n", i);
@@ -235,10 +247,10 @@ void print_cache(){
 			printf("t: %u|v: %i|o: %u ", cache->sets[i]->bloques[j]->tag, 
 				                         cache->sets[i]->bloques[j]->v,
 				                         cache->sets[i]->bloques[j]->orden);
-			for (int k=0; k<32; ++k){
-				if (cache->sets[i]->latest == j )
+			for (int k=0; k<64; ++k){
+				if (cache->sets[i]->latest == j)
 					printf(VERDE_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
-				else if (*cache->sets[i]->bloques[j]->direcciones[k] != 0)
+				else if (cache->sets[i]->bloques[j]->v)
 					printf(ROJO_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
 				else
 					printf("|%i|", *cache->sets[i]->bloques[j]->direcciones[k]);
