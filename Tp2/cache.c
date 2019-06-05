@@ -131,6 +131,10 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
 	bloque->orden = (cache->sets[set]->latest + 1) % 4;
 	bloque->tag = get_tag(blocknum);
 
+	bloque_t* aux = cache->sets[set]->bloques[way];
+    for (int k=0; k<TAMANIO_BLOQUE; ++k)
+        free(aux->direcciones[k]);
+    free(aux);
 	cache->sets[set]->bloques[way] = bloque;
 	cache->sets[set]->latest = way;
 }
@@ -225,7 +229,7 @@ void free_memory(){
 void free_cache(){
 	for (unsigned int i=0; i<CANTIDAD_SETS; ++i){
 		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j){
-			for (int k=0; k<TAMANIO_BLOQUE; k++)
+			for (int k=0; k<TAMANIO_BLOQUE; ++k)
 				free(cache->sets[i]->bloques[j]->direcciones[k]);
 			free(cache->sets[i]->bloques[j]);
 		}
