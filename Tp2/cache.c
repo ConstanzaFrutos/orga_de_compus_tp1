@@ -4,14 +4,13 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define TAMANIO_BLOQUE 64 //(B)
+#define TAMANIO_BLOQUE 64 //[B]
 #define CANTIDAD_SETS 8
 #define BLOQUES_POR_SET 4
-#define DIRECCIONES_POR_BLOQUE 32
 #define BITS_OFFSET 6
 #define BITS_INDEX 3
 #define BITS_TAG 7
-#define ESPACIO_DIRECCIONES 16 //(b)
+#define ESPACIO_DIRECCIONES 16 //[b]
 #define CANTIDAD_DIRECCIONES 32768 //32KB
 
 #define MASCARA_OFFSET 0x3f
@@ -25,7 +24,7 @@ typedef struct memoria {
 } memoria_t;
 
 typedef struct bloque {
-	unsigned char* direcciones[DIRECCIONES_POR_BLOQUE];
+	unsigned char* direcciones[TAMANIO_BLOQUE];
 	unsigned int tag;
 	bool v;
 	unsigned int orden;
@@ -64,7 +63,7 @@ void init(){
 		cache->sets[i]->latest = -1;
 		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j){
 			cache->sets[i]->bloques[j] = calloc(1, sizeof(bloque_t));
-			for (int k=0; k<DIRECCIONES_POR_BLOQUE; k++)
+			for (int k=0; k<TAMANIO_BLOQUE; k++)
 				cache->sets[i]->bloques[j]->direcciones[k] = calloc(1, sizeof(unsigned char));
 			cache->sets[i]->bloques[j]->v = false;
 			cache->sets[i]->bloques[j]->orden = 0;
@@ -79,7 +78,7 @@ void init(){
 //mapea la dirección address.
 unsigned int get_offset(unsigned int address){
 	unsigned int offset = 0;
-	offset = address & 0x1f;
+	offset = address & 0x3f;
 	printf("off: %i\n", offset);
 
 	return offset;
@@ -90,16 +89,16 @@ unsigned int get_offset(unsigned int address){
 //mapea la dirección address.
 unsigned int find_set(unsigned int address){
 	unsigned int set = 0;
-	set = address & 0xe0;
-	set = set >> 5;
+	set = address & 0x1c0;
+	set = set >> 6;
 	printf("set: %i\n", set);
 	return set;
 }
 
 unsigned int get_tag(unsigned int address){
 	unsigned int tag = 0;
-	tag = address & 0xff00;
-	tag = tag >> 8;
+	tag = address & 0xfe00;
+	tag = tag >> 7;
 	printf("tag: %i\n", tag);
 
 	return tag;
@@ -131,7 +130,7 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
 	printf("Ad: %u, way: %u, set: %u\n", blocknum, way, set);
 	int inicio = blocknum - blocknum % BLOQUES_POR_SET;
 	bloque_t* bloque = calloc(1, sizeof(bloque_t));
-	for (int i=0; i<DIRECCIONES_POR_BLOQUE; ++i){
+	for (int i=0; i<TAMANIO_BLOQUE; ++i){
 		bloque->direcciones[i] = calloc(1, sizeof(unsigned char));
 		*bloque->direcciones[i] = *memoria->direcciones[inicio + i];
 	}
