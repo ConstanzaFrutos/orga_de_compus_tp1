@@ -37,24 +37,19 @@ typedef struct cache {
 	float misses;
 } cache_t;
 
-//memorias
-
+/* Memorias */
 memoria_t* memoria;
-
 cache_t* cache;
 
-//Post: La memoria principal simulada queda 
-//inicializada en 0, los bloques de caché como 
-//inválidos y la tasa de misses en 0.
-void init(){
-
+//Post: La memoria principal simulada queda inicializada en 0, los bloques de
+// caché como inválidos y la tasa de misses en 0.
+void init() {
 	memoria = calloc(1, sizeof(memoria_t));
-	for (unsigned int i=0; i<CANTIDAD_DIRECCIONES; ++i){
+	for (unsigned int i=0; i<CANTIDAD_DIRECCIONES; ++i)
 		memoria->direcciones[i] = calloc(1, sizeof(unsigned char));
-	}
 
 	cache = calloc(1, sizeof(cache_t));
-	for (unsigned int i=0; i<CANTIDAD_SETS; ++i){
+	for (unsigned int i=0; i<CANTIDAD_SETS; ++i) {
 		cache->sets[i] = calloc(1, sizeof(set_t));
 		cache->sets[i]->latest = -1;
 		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j){
@@ -72,47 +67,32 @@ void init(){
 //Pre: recibe una address como unsigned int
 //Post: devuelve el offset del byte del bloque de memoria al que 
 //mapea la dirección address.
-unsigned int get_offset(unsigned int address){
-	unsigned int offset = 0;
-	offset = address & 0x3f;
-
-	return offset;
+unsigned int get_offset(unsigned int address) {
+	return (address & 0x3f);
 }
 
 //Pre: recibe una address como unsigned int
-//Post: devuelve el conjunto de caché al que
-//mapea la dirección address.
-unsigned int find_set(unsigned int address){
-	unsigned int set = 0;
-	set = address & 0x1c0;
-	set = set >> BITS_OFFSET;
-
-	return set;
+//Post: devuelve el conjunto de caché al que mapea la dirección address.
+unsigned int find_set(unsigned int address) {
+	return ((address & 0x1c0) >> BITS_OFFSET);
 }
 
-unsigned int get_tag(unsigned int address){
-	unsigned int tag = 0;
-	tag = address & 0xfe00;
-	tag = tag >> (BITS_OFFSET + BITS_INDEX);
-
-	return tag;
+unsigned int get_tag(unsigned int address) {
+	return ((address & 0xfe00) >> (BITS_OFFSET + BITS_INDEX));
 }
 
 //Pre: Recibe setnum como unsigned int.
 //Post: devuelve la vía en la que esta el bloque mas
 //"viejo" dentro de un conjunto, utilizando el campo
 //correspondiente de los metadatos de los bloques del conjunto.
-unsigned int select_oldest(unsigned int setnum){
+unsigned int select_oldest(unsigned int setnum) {
 	unsigned int way = 0;
 	unsigned int orden_mas_viejo = 0;
-	
-	for (int i=0; i<BLOQUES_POR_SET; ++i){
-		if (cache->sets[setnum]->bloques[i]->orden <= orden_mas_viejo){
+	for (int i=0; i<BLOQUES_POR_SET; ++i)
+		if (cache->sets[setnum]->bloques[i]->orden <= orden_mas_viejo) {
 			orden_mas_viejo = cache->sets[setnum]->bloques[i]->orden;
 			way = i;
 		}
-	}
-
 	return way;
 }
 
@@ -120,10 +100,10 @@ unsigned int select_oldest(unsigned int setnum){
 //Lee el bloque blocknum de memoria y lo guarda en el conjunto y 
 //vía indicados en la memoria caché.
 //Post: Deja a la caché en el estado indicado.
-void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
+void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set) {
 	int inicio = blocknum - blocknum % BLOQUES_POR_SET;
 	bloque_t* bloque = calloc(1, sizeof(bloque_t));
-	for (int i=0; i<TAMANIO_BLOQUE; ++i){
+	for (int i=0; i<TAMANIO_BLOQUE; ++i) {
 		bloque->direcciones[i] = calloc(1, sizeof(unsigned char));
 		*bloque->direcciones[i] = *memoria->direcciones[inicio + i];
 	}
@@ -135,31 +115,27 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set){
     for (int k=0; k<TAMANIO_BLOQUE; ++k)
         free(aux->direcciones[k]);
     free(aux);
+
 	cache->sets[set]->bloques[way] = bloque;
 	cache->sets[set]->latest = way;
 }
 
 //Devuelve -1 si no lo encuentra
-int get_way(unsigned int address, unsigned int idx){
+int get_way(unsigned int address, unsigned int idx) {
 	unsigned int tag = get_tag(address);
-	int i = 0;
-	while (i<BLOQUES_POR_SET){
+	for (int i = 0; i < BLOQUES_POR_SET; ++i)
 		if (cache->sets[idx]->bloques[i]->v){
 			unsigned int other_tag = cache->sets[idx]->bloques[i]->tag;
 			if (tag == other_tag)
 				return i;
 		}
-		++i;
-	}
-
 	return -1;
 }
 
-bool set_is_full(unsigned int set){
-	for (int i=0; i<BLOQUES_POR_SET; ++i){
+bool set_is_full(unsigned int set) {
+	for (int i=0; i<BLOQUES_POR_SET; ++i)
 		if (!cache->sets[set]->bloques[i]->v)
 			return false;
-	}
 	return true;
 }
 
@@ -168,7 +144,7 @@ bool set_is_full(unsigned int set){
 //address en la caché. Si no se encuentra carga el bloque.
 //Post: Retorna el valor del byte almacenado en la 
 //dirección indicada.
-unsigned char read_byte(unsigned int address){
+unsigned char read_byte(unsigned int address) {
 	unsigned int offset = get_offset(address);
 	unsigned int idx = find_set(address);
 	cache->total_accesos ++;
@@ -190,7 +166,7 @@ unsigned char read_byte(unsigned int address){
 }
 
 //Escribe en memoria.
-void write_tocache(unsigned int address, unsigned char value){
+void write_tocache(unsigned int address, unsigned char value) {
 	*memoria->direcciones[address] = value;
 }
 
@@ -199,7 +175,7 @@ void write_tocache(unsigned int address, unsigned char value){
 //y en la posición correcta del bloque que corresponde a address,
 //si el bloque se encuentra en la caché. Si no se encuentra, 
 //debe escribir el valor solamente en la memoria.
-void write_byte(unsigned int address, unsigned char value){
+void write_byte(unsigned int address, unsigned char value) {
 	unsigned int offset = get_offset(address);
 	unsigned int idx = find_set(address);
 
@@ -214,21 +190,21 @@ void write_byte(unsigned int address, unsigned char value){
 }
 
 //Post: devuelve el porcentaje de misses desde que se inicializó la caché.
-float get_miss_rate(){
+float get_miss_rate() {
 	float miss_rate = cache->misses / cache->total_accesos;
 	return miss_rate;
 }
 
-void free_memory(){
+void free_memory() {
 	for (unsigned int i=0; i<CANTIDAD_DIRECCIONES; ++i){
 		free(memoria->direcciones[i]);
 	}
 	free(memoria);
 }
 
-void free_cache(){
-	for (unsigned int i=0; i<CANTIDAD_SETS; ++i){
-		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j){
+void free_cache() {
+	for (unsigned int i=0; i<CANTIDAD_SETS; ++i) {
+		for (unsigned int j=0; j<BLOQUES_POR_SET; ++j) {
 			for (int k=0; k<TAMANIO_BLOQUE; ++k)
 				free(cache->sets[i]->bloques[j]->direcciones[k]);
 			free(cache->sets[i]->bloques[j]);
@@ -238,12 +214,12 @@ void free_cache(){
 	free(cache);
 }
 
-void free_resources(){
+void free_resources() {
 	free_memory();
 	free_cache();
 }
 
-void print_cache(){
+void print_cache() {
 	for (int i=0; i<5; ++i){
 		printf("set %i\n", i);
 		for (int j=0; j<4; ++j){
@@ -265,7 +241,7 @@ void print_cache(){
 	}
 }
 
-void print_memoria(){
+void print_memoria() {
 	for (int i=0; i<3000; ++i){
 		if (*memoria->direcciones[i] != 0)
 			printf(ROJO_T "|%i|" RESET_COLOR, *memoria->direcciones[i]);
@@ -274,5 +250,3 @@ void print_memoria(){
 	}
 	printf("\n\n");
 }
-
-

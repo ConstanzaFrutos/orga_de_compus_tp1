@@ -1,5 +1,4 @@
 #include "cache.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -12,33 +11,23 @@
 #define MR "MR"
 
 bool is_address_valid(unsigned int address){
-	if (address < CANTIDAD_DIRECCIONES)
-		return true;
-	return false;
+	return (address < CANTIDAD_DIRECCIONES);
 }
 
 bool is_flush_command(char* command){
-	if (strstr(command, FLUSH))
-		return true;
-	return false;
+	return (strstr(command, FLUSH));
 }
 
 bool is_r_command(char* command){
-	if (strstr(command, R))
-		return true;
-	return false;
+	return (strstr(command, R));
 }
 
 bool is_w_command(char* command){
-	if (strstr(command, W))
-		return true;
-	return false;
+	return (strstr(command, W));
 }
 
 bool is_mr_command(char* command){
-	if (strstr(command, MR))
-		return true;
-	return false;
+    return (strstr(command, MR));
 }
 
 void parse_w_command(char* command, unsigned int *address, unsigned char *value){
@@ -66,43 +55,42 @@ int main(int argc, char* argv[]){
 	}
 	
 	char command[MAX_LEN];
-	while (!feof(file)){
-		if (fgets(command, MAX_LEN, file)){
+	while (!feof(file)) {
+		if (fgets(command, MAX_LEN, file)) {
 			printf("%s\n", command);
-			if (is_flush_command(command)){
+			if (is_flush_command(command)) {
 				init();
-			} else if (is_r_command(command)){
+			} else if (is_r_command(command)) {
 				unsigned int address;
 				parse_r_command(command, &address);
-				if (is_address_valid(address)){
+				if (is_address_valid(address)) {
 					unsigned char value = read_byte(address);
 					printf("Value: %i\n", value);
-					print_cache();
-				} else{
+//					print_cache();
+				} else {
 					perror("Comando invalido\n");
 				}
-			} else if (is_w_command(command)){
+			} else if (is_w_command(command)) {
 				unsigned int address;
 				unsigned char value;
 				parse_w_command(command, &address, &value);
-				if (is_address_valid(address)){
+				if (is_address_valid(address)) {
 					write_byte(address, value);
-					print_cache();
-					print_memoria();
+//					print_cache();
+//					print_memoria();
 				} else {
 					perror("Comando invalido\n");
 				}				
-			} else if (is_mr_command(command)){
-				float miss_rate = get_miss_rate();
-				printf("Miss rate: %f\n", miss_rate);
-			} else {
-				perror("Comando invalido\n");
-			}
+			} else if (is_mr_command(command)) {
+                printf("Miss rate: %f\n", get_miss_rate());
+            } else {
+                perror("Comando invalido\n");
+            }
 		}
 	}
-
+	print_cache();
+//	print_memoria();
 	free_resources();
 	fclose(file);
-
 	return 0;
 }
