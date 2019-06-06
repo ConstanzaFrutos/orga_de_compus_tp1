@@ -87,7 +87,7 @@ unsigned int get_tag(unsigned int address) {
 //correspondiente de los metadatos de los bloques del conjunto.
 unsigned int select_oldest(unsigned int setnum) {
 	unsigned int way = 0;
-	unsigned int orden_mas_viejo = 0;
+	unsigned int orden_mas_viejo = 1000000;
 	for (int i=0; i<BLOQUES_POR_SET; ++i)
 		if (cache->sets[setnum]->bloques[i]->orden <= orden_mas_viejo) {
 			orden_mas_viejo = cache->sets[setnum]->bloques[i]->orden;
@@ -108,7 +108,7 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set) {
 		*bloque->direcciones[i] = *memoria->direcciones[inicio + i];
 	}
 	bloque->v = true;
-	bloque->orden = (cache->sets[set]->latest + 1) % 4;
+	bloque->orden = cache->sets[set]->latest + 1;
 	bloque->tag = get_tag(blocknum);
 
 	bloque_t* aux = cache->sets[set]->bloques[way];
@@ -117,7 +117,7 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set) {
     free(aux);
 
 	cache->sets[set]->bloques[way] = bloque;
-	cache->sets[set]->latest = way;
+	cache->sets[set]->latest = bloque->orden;
 }
 
 //Devuelve -1 si no lo encuentra
@@ -220,15 +220,16 @@ void free_resources() {
 }
 
 void print_cache() {
-	for (int i=0; i<5; ++i){
+	for (int i=0; i<CANTIDAD_SETS; ++i){
 		printf("set %i\n", i);
-		for (int j=0; j<4; ++j){
+		for (int j=0; j<BLOQUES_POR_SET; ++j){
 			printf("Bloque %i\n", j);
 			printf("t: %u|v: %i|o: %u ", cache->sets[i]->bloques[j]->tag, 
 				                         cache->sets[i]->bloques[j]->v,
 				                         cache->sets[i]->bloques[j]->orden);
-			for (int k=0; k<64; ++k){
-				if (cache->sets[i]->latest == j)
+			for (int k=0; k<TAMANIO_BLOQUE; ++k){
+				if (cache->sets[i]->latest == cache->sets[i]->bloques[j]->orden 
+					&& cache->sets[i]->bloques[j]->orden != 0)
 					printf(VERDE_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
 				else if (cache->sets[i]->bloques[j]->v)
 					printf(ROJO_T "|%i|" RESET_COLOR, *cache->sets[i]->bloques[j]->direcciones[k]);	
@@ -242,7 +243,7 @@ void print_cache() {
 }
 
 void print_memoria() {
-	for (int i=0; i<3000; ++i){
+	for (int i=0; i<CANTIDAD_DIRECCIONES; ++i){
 		if (*memoria->direcciones[i] != 0)
 			printf(ROJO_T "|%i|" RESET_COLOR, *memoria->direcciones[i]);
 		else 

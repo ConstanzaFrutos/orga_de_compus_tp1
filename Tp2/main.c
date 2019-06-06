@@ -34,7 +34,6 @@ void parse_w_command(char* command, unsigned int *address, unsigned char *value)
 	unsigned int n = 0;
 	sscanf(command, "%*s %u, %u", address, &n);
 	*value = n;
-	printf("%u, %i\n", *address, *value);
 }
 
 void parse_r_command(char* command, unsigned int *address){
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]){
 	FILE* file;
 	file = fopen(argv[1], "r");        
 	if (!file) {
-		perror("Error al abrir el archivo"); 
+		perror("Error al abrir el archivo."); 
 		exit (1);
 	}
 	
@@ -66,9 +65,9 @@ int main(int argc, char* argv[]){
 				if (is_address_valid(address)) {
 					unsigned char value = read_byte(address);
 					printf("Value: %i\n", value);
-//					print_cache();
+					print_cache();
 				} else {
-					perror("Comando invalido\n");
+					perror("Comando invalido.\n");
 				}
 			} else if (is_w_command(command)) {
 				unsigned int address;
@@ -76,15 +75,15 @@ int main(int argc, char* argv[]){
 				parse_w_command(command, &address, &value);
 				if (is_address_valid(address)) {
 					write_byte(address, value);
-//					print_cache();
-//					print_memoria();
+					print_cache();
+					print_memoria();
 				} else {
-					perror("Comando invalido\n");
+					perror("Comando invalido.\n");
 				}				
 			} else if (is_mr_command(command)) {
                 printf("Miss rate: %f\n", get_miss_rate());
             } else {
-                perror("Comando invalido\n");
+                perror("Comando invalido.\n");
             }
 		}
 	}
