@@ -6,7 +6,7 @@
 		"J": [{"id": "op", "size": 6}, {"id": "target", "size": 26}]
 	},
 	"instructions": {
-		"j":    {"type": "J", "args": ["target"], "fields": {"op": 2, "target": #1}, "desc": "PC = target"},
+		"j":    {"type": "J", "args": ["target"], "fields": {"op": 2, "target": "#1"}, "desc": "PC = target"},
 		"nop":  {"type": "R", "fields": {"op": 0, "rs": 0, "rt": 0, "rd": 0, "shamt": 0, "func": 0}},
 		"add":  {"type": "R", "args": ["reg", "reg", "reg"], "fields": {"op": 0, "rs": "#2", "rt": "#3", "rd": "#1", "shamt": 0, "func": 32}, "desc": "$t1 = $t2 + $t3"},
 		"sub":  {"type": "R", "args": ["reg", "reg", "reg"], "fields": {"op": 0, "rs": "#2", "rt": "#3", "rd": "#1", "shamt": 0, "func": 34}, "desc": "$t1 = $t2 - $t3"},

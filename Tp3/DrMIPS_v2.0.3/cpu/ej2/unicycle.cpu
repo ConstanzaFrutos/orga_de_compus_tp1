@@ -7,7 +7,17 @@
 		"InstMem":    {"type": "InstructionMemory", "latency": 300, "x": 90, "y": 215, "in": "Address", "out": "Instruction"},
 		"ForkPC":     {"type": "Fork", "x": 80, "y": 265, "size": 32, "in": "In", "out": ["Out1", "Out2"]},
 		"Control":    {"type": "ControlUnit", "latency": 50, "x": 220, "y": 110, "in": "Opcode"},
-		"DistInst":   {"type": "Distributor", "x": 180, "y": 250, "in": {"id": "Instruction", "size": 32}, "out": [{"id": "31-26", "msb": 31, "lsb": 26}, {"msb": 25, "lsb": 21}, {"msb": 20, "lsb": 16},   {"msb": 15, "lsb": 11}, {"msb": 15, "lsb": 0}, {"msb": 25, "lsb": 0}]},
+		
+
+		"DistInst":   {"type": "Distributor", "x": 180, "y": 250, "in": {"id": "Instruction", "size": 32}, "out": [{"id": "31-26", "msb": 31, "lsb": 26}, {"msb": 25, "lsb": 21}, {"msb": 20, "lsb": 16}, {"msb": 15, "lsb": 11}, {"msb": 15, "lsb": 0}, {"msb": 25, "lsb": 0}, {"msb": 10, "lsb": 6}]},
+		
+		"ForkFunc":   {"type": "Fork", "x": 340, "y": 380, "size": 6, "in": "func", "out": ["Out1", "Out2"]},
+		"ShamtConcat":{"type": "Concatenator", "latency": 5, "x": 370, "y": 290, "in1": {"id": "In1", "size": 27}, 					   "in2": {"id": "In2", "size": 5}, "out": "Out", "desc": 
+		               {"default": "Concatenates 27 zeroes with the shamt.", "pt": ""}},
+        "Const0":     {"type": "Constant", "x": 360, "y": 290, "out": "Out", "val": 0, "size": 27},
+		"MuxShamt":   {"type": "Multiplexer", "latency": 15, "x": 385, "y": 270, "size": 32, "sel": "ShiftInst", "out": "Out", "in": ["rt", "shamt"], "desc": {"default": "Selects the instruction's rt or shamt field if itś shift instruction as In2 in ALU.", "pt": " "}},
+
+
 		"MuxDst":     {"type": "Multiplexer", "latency": 15, "x": 205, "y": 260, "size": 5, "sel": "RegDst", "out": "Out", "in": ["0", "1"], "desc": {"default": "Selects the instruction's rt or rd field as the destination register (WriteReg).", "pt": "Selecciona o campo rt ou rd da instrução como registo de destino (WriteReg)."}},
 		"ForkRt":     {"type": "Fork", "x": 200, "y": 265, "size": 5, "in": "In", "out": ["Out1", "Out2"]},
 		"DistImm":    {"type": "Distributor", "x": 255, "y": 340, "in": {"id": "In", "size": 16}, "out": [{"msb": 15, "lsb": 0}, {"msb": 5, "lsb": 0}]},
@@ -31,6 +41,7 @@
 		"MuxMem":     {"type": "Multiplexer", "latency": 15, "x": 580, "y": 270, "size": 32, "sel": "MemToReg", "in": ["0", "1"], "out": "Out", "desc": {"default": "Selects the result of the ALU or the value read from memory to write to the destination register (WriteData).", "pt": "Selecciona o resultado da ALU ou o valor lido da memória para escrever no registo de destino (WriteData)."}}
 	},
 	"wires": [
+
 		{"from": "PC", "out": "PC", "to": "ForkPC", "in": "In"},
 		{"from": "Const4", "out": "Out", "to": "PCAdder", "in": "In2"},
 		{"from": "ForkPC", "out": "Out1", "to": "PCAdder", "in": "In1", "points": [{"x": 80, "y": 69}]},
@@ -60,10 +71,23 @@
 		{"from": "ConcatJump", "out": "Out", "to": "MuxJump", "in": "1"},
 		{"from": "MuxJump", "out": "Out", "to": "PC", "in": "NewPC", "points": [{"x": 600, "y": 35}, {"x": 600, "y": 10}, {"x": 30, "y": 10}, {"x": 30, "y": 265}]},
 		{"from": "Control", "out": "Jump", "to": "MuxJump", "in": "Jump", "start": {"x": 280, "y": 140}, "points": [{"x": 587, "y": 140}], "end": {"x": 587, "y": 53}},
-		{"from": "DistImm", "out": "5-0", "to": "ALUControl", "in": "func", "points": [{"x": 265, "y": 360}, {"x": 265, "y": 380}, {"x": 350, "y": 380}, {"x": 350, "y": 350}]},
+
+
+
+		{"from": "ForkFunc", "out": "Out1", "to": "ALUControl", "in": "func", "points": [{"x": 350, "y": 380}, {"x": 350, "y": 350}]},
+		{"from": "DistImm", "out": "5-0", "to": "ForkFunc", "in": "func", "points": [{"x": 270, "y":360}, {"x": 270, "y": 380}, {"x": 340, "y": 380}, {"x": 340, "y": 380}]},
+		{"from": "Const0", "out": "Out", "to": "ShamtConcat", "in": "In1", "start": {"x": 360, "y": 290}, "end": {"x": 370, "y": 290}},
+		{"from": "DistInst", "out": "10-6", "to": "ShamtConcat", "in": "In2", "start": {"x": 380, "y": 310}, "end": {"x": 370, "y": 290}},
+		{"from": "Control", "out": "Shamt", "to": "MuxShamt", "in": "ShiftInst", "start": {"x": 385, "y": 260}},
+		{"from": "ShamtConcat", "out": "Out","to": "MuxShamt", "in": "shamt", "start": {"x": 375, "y":280}, "end": {"x": 385, "y": 280}},
+		{"from": "MuxReg", "out": "Out", "to": "MuxShamt", "in": rt, "start": {"x": 360, "y": 280}, "end": {"x": 385, "y": 280}},
+
+		{"from": "MuxShamt", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 400, "y": 287}},
+
+
 		{"from": "Control", "out": "ALUOp", "to": "ALUControl", "in": "ALUOp", "start": {"x": 280, "y": 180}, "points": [{"x": 380, "y": 180}]},
 		{"from": "RegBank", "out": "ReadData1", "to": "ALU", "in": "In1", "end": {"x": 400, "y": 248}},
-		{"from": "MuxReg", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 400, "y": 287}},
+		
 		{"from": "ALUControl", "out": "Operation", "to": "ALU", "in": "Operation", "points": [{"x": 430, "y": 350}]},
 		{"from": "ForkImm", "out": "Out2", "to": "ShiftImm", "in": "In", "points": [{"x": 340, "y": 100}]},
 		{"from": "ShiftImm", "out": "Out", "to": "AddBranch", "in": "In2", "points": [{"x": 405, "y": 100}, {"x": 405, "y": 82}]},

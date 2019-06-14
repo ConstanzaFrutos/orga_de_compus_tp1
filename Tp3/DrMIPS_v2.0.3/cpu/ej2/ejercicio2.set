@@ -13,7 +13,7 @@
 		"or":   {"type": "R", "args": ["reg", "reg", "reg"], "fields": {"op": 0, "rs": "#2", "rt": "#3", "rd": "#1", "shamt": 0, "func": 37}, "desc": "$t1 = $t2 | $t3"},
 		"nor":   {"type": "R", "args": ["reg", "reg", "reg"], "fields": {"op": 0, "rs": "#2", "rt": "#3", "rd": "#1", "shamt": 0, "func": 39}, "desc": "$t1 = ~($t2 | $t3)"},
 		"slt":  {"type": "R", "args": ["reg", "reg", "reg"], "fields": {"op": 0, "rs": "#2", "rt": "#3", "rd": "#1", "shamt": 0, "func": 42}, "desc": "$t1 = ($t2 < $t3) ? 1 : 0"},
-		"sll":  {"type": "R", "args": ["reg", "reg", "int"], "fields": {"op": 0, "rs": "#3", "rt": "#2", "rd": "#1", "shamt": "#3", "func": 0}},
+		"sll":  {"type": "R", "args": ["reg", "reg", "int"], "fields": {"op": 3, "rs": "#2", "rt": "#2", "rd": "#1", "shamt": "#3", "func": 0}},
 		"j":    {"type": "J", "args": ["target"], "fields": {"op": 2, "target": "#1"}, "desc": "PC = target"},
 		"addi": {"type": "I", "args": ["reg", "reg", "int"], "fields": {"op": 8, "rs": "#2", "rt": "#1", "imm": "#3"}, "desc": "$t1 = $t2 + 23"},
 		"beq":  {"type": "I", "args": ["reg", "reg", "offset"], "fields": {"op": 4, "rs": "#1", "rt": "#2", "imm": "#3"}, "desc": "PC += ($t1 == $t2) ? (offset * 4 + 4) : 4"},
@@ -34,6 +34,7 @@
 	},
 	"control": {
 		"0": {"RegDst": 1, "RegWrite": 1, "ALUOp": 2, "ALUSrc": 0, "MemToReg": 0},
+		"3": {"RegDst": 1, "RegWrite": 1, "ALUOp": 2, "ALUSrc": 0, "MemToReg": 0, "Shamt": 1},
 		"8": {"RegDst": 0, "RegWrite": 1, "ALUOp": 0, "ALUSrc": 1, "MemToReg": 0},
 		"2": {"Jump": 1},
 		"4": {"ALUOp": 1, "ALUSrc": 0, "Branch": 1},
