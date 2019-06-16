@@ -76,10 +76,10 @@
 
 		{"from": "ForkFunc", "out": "Out1", "to": "ALUControl", "in": "func", "points": [{"x": 350, "y": 380}, {"x": 350, "y": 350}]},
 		{"from": "DistImm", "out": "5-0", "to": "ForkFunc", "in": "func", "points": [{"x": 270, "y":360}, {"x": 270, "y": 380}, {"x": 340, "y": 380}, {"x": 340, "y": 380}]},
-		{"from": "Const0", "out": "Out", "to": "ShamtConcat", "in": "In1", "start": {"x": 360, "y": 290}, "end": {"x": 370, "y": 290}},
-		{"from": "DistInst", "out": "10-6", "to": "ShamtConcat", "in": "In2", "start": {"x": 380, "y": 310}, "end": {"x": 370, "y": 290}},
+		{"from": "Const0", "out": "Out", "to": "ShamtConcat", "in": "In1", "end": {"x": 380, "y": 280}},
+		{"from": "DistInst", "out": "10-6", "to": "ShamtConcat", "in": "In2", "start": {"x": 185, "y": 280}, "points": [{"x": 195, "y": 280}, {"x": 195, "y": 390}, {"x": 370, "y": 390}, {"x": 370, "y": 290}]},
 		{"from": "Control", "out": "Shamt", "to": "MuxShamt", "in": "ShiftInst", "start": {"x": 385, "y": 260}},
-		{"from": "ShamtConcat", "out": "Out","to": "MuxShamt", "in": "shamt", "start": {"x": 375, "y":280}, "end": {"x": 385, "y": 280}},
+		{"from": "ShamtConcat", "out": "Out","to": "MuxShamt", "in": "shamt", "start": {"x": 370, "y":290}, "end": {"x": 385, "y": 290}},
 		{"from": "MuxReg", "out": "Out", "to": "MuxShamt", "in": rt, "start": {"x": 360, "y": 280}, "end": {"x": 385, "y": 280}},
 
 		{"from": "MuxShamt", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 400, "y": 287}},

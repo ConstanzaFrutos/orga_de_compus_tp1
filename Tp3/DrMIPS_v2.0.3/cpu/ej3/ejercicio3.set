@@ -53,7 +53,7 @@
 			{"aluop": 2, "func": 37, "out": {"Operation": 1}},
 			{"aluop": 2, "func": 39, "out": {"Operation": 12}},
 			{"aluop": 2, "func": 42, "out": {"Operation": 7}},
-			{"aluop": 2, "func":  2, "out": {"Operation": 13}}
+			{"aluop": 2, "func":  2, "out": {"Operation": 14}}
 		],
 		"operations": {
 			"0": "and",
@@ -62,7 +62,7 @@
 			"6": "sub",
 			"7": "slt",
 			"12": "nor",
-			"13": "srl"
+			"14": "srl"
 		}
 	}
 }
