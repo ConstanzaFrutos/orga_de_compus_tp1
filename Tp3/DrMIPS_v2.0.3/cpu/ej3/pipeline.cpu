@@ -15,8 +15,13 @@
 		"Const0Or4":   {"type": "Constant", "x": 325, "y": 460, "out": "Out", "val": 0, "size": 1},
 		"Const0Or3":   {"type": "Constant", "x": 325, "y": 460, "out": "Out", "val": 0, "size": 1},
 
+		"Const1Mux1":  {"type": "Constant", "x": 375, "y": 410, "out": "Out", "val": 1, "size": 1},
+		"Mux1":        {"type": "Multiplexer", "latency": 15, "x": 390, "y": 410, "size": 1, "sel": "ResOr5", "in": ["ResOr4", "1"], "out": "Out", "desc": {"default": "Selects the or result or 1.", "pt": "."}},
 		
+		"Const1Mux2":  {"type": "Constant", "x": 375, "y": 450, "out": "Out", "val": 1, "size": 1},
+		"Mux2":        {"type": "Multiplexer", "latency": 15, "x": 415, "y": 450, "size": 1, "sel": "ResOr4", "in": ["ResOr3", "1"], "out": "Out", "desc": {"default": "Selects the or result or 1.", "pt": "."}},
 
+		"MuxShamt":   {"type": "Multiplexer", "latency": 15, "x": 465, "y": 270, "size": 32, "sel": "ShiftInst", "out": "Out", "in": ["shamt", "rt"], "desc": {"default": "Selects the instruction's rt or shamt field if itś shift instruction as In2 in ALU.", "pt": " "}},
 
 
 
@@ -101,6 +106,21 @@
 		{"from": "Const0Or4", "out": "Out", "to": "Or4", "in": "In2", "start": {"x": 325, "y": 460}, "points": [{"x": 345, "y": 460}, {"x": 345, "y": 440}], "end": {"x": 350, "y": 440}},
 		{"from": "Const0Or3", "out": "Out", "to": "Or3", "in": "In2", "start": {"x": 325, "y": 460}, "points": [{"x": 345, "y": 460}, {"x": 345, "y": 460}], "end": {"x": 350, "y": 460}},  
 
+		{"from": "Or5", "out": "Out", "to": "Mux1", "in": "ResOr5", "start": {"x": 350, "y": 420}, "end": {"x": 395, "y": 410}},
+		{"from": "Or4", "out": "Out", "to": "Mux1", "in": "ResOr4", "start": {"x": 350, "y": 440}, "end": {"x": 390, "y": 415}},
+		{"from": "Const1Mux1", "out": "Out", "to": "Mux1", "in": "1", "start": {"x": 375, "y": 410}, "end": {"x": 390, "y": 420}},
+
+		{"from": "Mux1", "out": "Out", "to": "Mux2", "in": "ResOr4", "start": {"x": 390, "y": 415}, "end": {"x": 420, "y": 450}},
+		{"from": "Or3", "out": "Out", "to": "Mux2", "in": "ResOr3", "start": {"x": 350, "y": 460}, "end": {"x": 415, "y": 455}},
+		{"from": "Const1Mux2", "out": "Out", "to": "Mux2", "in": "1", "start": {"x": 375, "y": 450}, "end": {"x": 415, "y": 465}},
+
+		{"from": "MuxShamt", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 480, "y": 287}},
+
+		{"from": "MuxReg", "out": "Out", "to": "MuxShamt", "in": "rt", "end": {"x": 465, "y": 275}},
+		{"from": "ID/EX", "out": "Shamt", "to": "MuxShamt", "in": "shamt", "end": {"x": 465, "y": 275}},
+		
+		{"from": "Mux2", "out": "Out", "to": "MuxShamt", "in": "ShiftInst", "end": {"x": 465, "y": 285}},
+
 		
 
 
@@ -156,7 +176,11 @@
 		{"from": "ForkMEMR2", "out": "Out2", "to": "MuxFwdB", "in": "1"},
 		{"from": "ForkReg", "out": "Out1", "to": "MuxReg", "in": "0"},
 		{"from": "ForkReg", "out": "Out2", "to": "EX/MEM", "in": "ReadData2", "points": [{"x": 445, "y": 308}], "end": {"x": 550, "y": 308}},
-		{"from": "MuxReg", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 480, "y": 287}},
+
+
+		
+		
+
 		{"from": "ID/EX", "out": "ALUSrc", "to": "MuxReg", "in": "ALUSrc", "start": {"x": 405, "y": 155}, "points": [{"x": 462, "y": 155}]},
 		{"from": "ID/EX", "out": "Imm", "to": "DistImm", "in": "In", "start": {"x": 405, "y": 350}, "end": {"x": 448, "y": 350}},
 		{"from": "ALUControl", "out": "Operation", "to": "ALU", "in": "Operation", "points": [{"x": 510, "y": 350}]},

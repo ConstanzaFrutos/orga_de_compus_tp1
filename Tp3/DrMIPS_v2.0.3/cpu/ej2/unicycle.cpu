@@ -80,7 +80,7 @@
 		{"from": "DistInst", "out": "10-6", "to": "ShamtConcat", "in": "In2", "start": {"x": 185, "y": 280}, "points": [{"x": 195, "y": 280}, {"x": 195, "y": 390}, {"x": 370, "y": 390}, {"x": 370, "y": 290}]},
 		{"from": "Control", "out": "Shamt", "to": "MuxShamt", "in": "ShiftInst", "start": {"x": 385, "y": 260}},
 		{"from": "ShamtConcat", "out": "Out","to": "MuxShamt", "in": "shamt", "start": {"x": 370, "y":290}, "end": {"x": 385, "y": 290}},
-		{"from": "MuxReg", "out": "Out", "to": "MuxShamt", "in": rt, "start": {"x": 360, "y": 280}, "end": {"x": 385, "y": 280}},
+		{"from": "MuxReg", "out": "Out", "to": "MuxShamt", "in": "rt", "start": {"x": 360, "y": 280}, "end": {"x": 385, "y": 280}},
 
 		{"from": "MuxShamt", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 400, "y": 287}},
 
