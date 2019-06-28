@@ -91,7 +91,7 @@
 		{"from": "EX/MEM", "out": "TargetJump", "to": "MEM/WB", "in": "TargetJump", "start": {"x": 550, "y": 115}, "end": {"x": 680, "y": 115}},
 
 		{"from": "MEM/WB", "out": "Jump", "to": "MuxJump", "in": "Jump", "start": {"x": 680, "y": 150}, "points": [{"x": 705, "y": 150}, {"x": 705, "y": 0}, {"x": 38, "y": 0}],"end": {"x": 38, "y": 190}},
-		{"from": "MEM/WB", "out": "TargetJump", "to": "MuxJump", "in": "Target", "start": {"x": 680, "y": 115}, "points": [{"x": 700, "y": 115}, {"x": 700, "y": 5}, {"x": 25, "y": 5}, {"x": 25, "y": 205}], "end": {"x": 38, "y": 205}},
+		{"from": "MEM/WB", "out": "TargetJump", "to": "MuxJump", "in": "Target", "start": {"x": 680, "y": 115}, "points": [{"x": 700, "y": 115}, {"x": 700, "y": 3}, {"x": 25, "y": 3}, {"x": 25, "y": 205}], "end": {"x": 38, "y": 205}},
 
 		{"from": "MuxJump", "out": "Out", "to": "PC", "in": "NewPC", "start": {"x": 38, "y": 210}, "points": [{"x": 50, "y": 210}, {"x": 50, "y": 240}, {"x": 36, "y": 240}, {"x": 36, "y": 255}], "end": {"x": 40, "y": 255}},
 

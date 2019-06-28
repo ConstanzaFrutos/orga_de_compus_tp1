@@ -1,27 +1,9 @@
 {
 	"components": {
-		"Const0":     {"type": "Constant", "x": 280, "y": 410, "out": "Out", "val": 0, "size": 27},
-		"ShamtConcat":{"type": "Concatenator", "latency": 5, "x": 300, "y": 400, "in1": {"id": "Const0", "size": 27}, 					   "in2": {"id": "Shamt", "size": 5}, "out": "Out", "desc": 
+		"MuxShamt": {"type": "Multiplexer", "latency": 15, "x": 515, "y": 320, "size": 32, "sel": "Shamt", "in": ["0", "1"], "out": "Out", "desc": {"default": "Si es shift instruction la salida es el shamt, sino es rs.", "pt": "."}},
+		"ShamtConcat":{"type": "Concatenator", "latency": 5, "x": 350, "y": 325, "in1": {"id": "In1", "size": 27}, 					   "in2": {"id": "In2", "size": 5}, "out": "Out", "desc": 
 		               {"default": "Concatenates 27 zeroes with the shamt.", "pt": ""}},
-		
-		
-		
-		"ForkFunc":   {"type": "Fork", "x": 455, "y": 350, "size": 6, "in": "In", "out": ["Out1", "Out2"]},
-		"DistFunc":   {"type": "Distributor", "x": 330, "y": 410, "in": {"id": "Func", "size": 6}, "out": [{"msb": 5, "lsb": 5}, {"msb": 4, "lsb": 4}, {"msb": 3, "lsb": 3}]},
-		"Or5":	      {"type": "Or", "x": 350, "y": 410, "in1": "In1", "in2": "In2", "out": "Out"},
-		"Or4":	      {"type": "Or", "x": 350, "y": 430, "in1": "In1", "in2": "In2", "out": "Out"},
-		"Or3":	      {"type": "Or", "x": 350, "y": 450, "in1": "In1", "in2": "In2", "out": "Out"},
-		"Const0Or5":   {"type": "Constant", "x": 325, "y": 460, "out": "Out", "val": 0, "size": 1},
-		"Const0Or4":   {"type": "Constant", "x": 325, "y": 460, "out": "Out", "val": 0, "size": 1},
-		"Const0Or3":   {"type": "Constant", "x": 325, "y": 460, "out": "Out", "val": 0, "size": 1},
-
-		"Const1Mux1":  {"type": "Constant", "x": 375, "y": 410, "out": "Out", "val": 1, "size": 1},
-		"Mux1":        {"type": "Multiplexer", "latency": 15, "x": 390, "y": 410, "size": 1, "sel": "ResOr5", "in": ["ResOr4", "1"], "out": "Out", "desc": {"default": "Selects the or result or 1.", "pt": "."}},
-		
-		"Const1Mux2":  {"type": "Constant", "x": 375, "y": 450, "out": "Out", "val": 1, "size": 1},
-		"Mux2":        {"type": "Multiplexer", "latency": 15, "x": 415, "y": 450, "size": 1, "sel": "ResOr4", "in": ["ResOr3", "1"], "out": "Out", "desc": {"default": "Selects the or result or 1.", "pt": "."}},
-
-		"MuxShamt":   {"type": "Multiplexer", "latency": 15, "x": 465, "y": 270, "size": 32, "sel": "ShiftInst", "out": "Out", "in": ["shamt", "rt"], "desc": {"default": "Selects the instruction's rt or shamt field if itś shift instruction as In2 in ALU.", "pt": " "}},
+        "Const0":     {"type": "Constant", "x": 330, "y": 330, "out": "Out", "val": 0, "size": 27},
 
 
 
@@ -35,7 +17,12 @@
 		
 		"IF/ID":      {"type": "PipelineRegister", "x": 180, "y": 110, "write": "Write", "flush": "Flush", "regs": {"NewPC": 32, "Instruction": 32}},
 		
+
+
 		"DistInst":   {"type": "Distributor", "x": 200, "y": 250, "in": {"id": "Instruction", "size": 32}, "out": [{"msb": 31, "lsb": 26}, {"msb": 25, "lsb": 21}, {"msb": 20, "lsb": 16},   {"msb": 15, "lsb": 11}, {"msb": 15, "lsb": 0}, {"msb": 10, "lsb": 6}]},
+
+
+
 		"ForkRt":     {"type": "Fork", "x": 220, "y": 265, "size": 5, "in": "In", "out": ["Out1", "Out2"]},
 		"RegBank":    {"type": "RegBank", "latency": 100, "x": 260, "y": 215, "num_regs": 32, "read_reg1": "ReadReg1", "read_reg2": "ReadReg2", "read_data1": "ReadData1", "read_data2": "ReadData2", "write_reg": "WriteReg", "write_data": "WriteData", "reg_write": "RegWrite", "forwarding": true, "const_regs": [{"reg": 0, "val": 0}], "desc": {"default": "Holds all the MIPS registers and provides read/write to them.\nThe values of the ReadReg1 and ReadReg2 registers are read to the outputs.\nWriteData is written to the WriteReg register at the clock transition if RegWrite is enabled.\nWhen the same register is read from and written to in the same clock cycle, this register bank also forwards the written value to the output.", "pt": "Contém todos os registos do MIPS e fornece acesso de leitura/escrita aos mesmos.\nOs valores dos registos ReadReg1 e ReadReg2 são lidos para as saídas.\nWriteData é escrito para o registo WriteReg na transição do relógio se RegWrite estiver activo.\nQuando o mesmo registo é lido e escrito no mesmo ciclo de relógio, este banco de registos também encaminha o valor escrito para a saída."}},
 		"Control":    {"type": "ControlUnit", "latency": 50, "x": 230, "y": 70, "in": "Opcode"},
@@ -48,7 +35,7 @@
 		"NotStall":   {"type": "Not", "x": 175, "y": 2, "in": "Stall", "out": "Write"},
 		"ForkWrite":  {"type": "Fork", "x": 190, "y": 50, "size": 1, "in": "In", "out": ["Out1", "Out2"]},
 		
-		"ID/EX":      {"type": "PipelineRegister", "x": 390, "y": 110, "regs": {"ReadData1": 32, "ReadData2": 32, "NewPC": 32, "Imm": 32, "Rs": 5, "Rt": 5, "Rd": 5, "RegDst": 1, "ALUOp": 2, "ALUSrc": 1, "Branch": 1, "MemRead": 1, "MemWrite": 1, "MemToReg": 1, "RegWrite": 1, "Shamt": 32}, "desc": {"default": "Register that separates two pipeline stages.\nThe values that transition to the next stage are stored here temporarily.\nIf Flush is active, all values are set to zero, inserting a NOP instruction.", "pt": "Registo que separa duas etapas do pipeline.\nOs valores que transitam para a próxima etapa são armazenados aqui temporariamente.\nSe Flush estiver activo, todos os valores são colocados a zero, inserindo uma instrução NOP."}},
+		"ID/EX":      {"type": "PipelineRegister", "x": 390, "y": 110, "regs": {"ReadData1": 32, "ReadData2": 32, "NewPC": 32, "Imm": 32, "Rs": 5, "Rt": 5, "Rd": 5, "RegDst": 1, "ALUOp": 2, "ALUSrc": 1, "Branch": 1, "MemRead": 1, "MemWrite": 1, "MemToReg": 1, "RegWrite": 1, "Shamt": 32, "ShamtControl": 1}, "desc": {"default": "Register that separates two pipeline stages.\nThe values that transition to the next stage are stored here temporarily.\nIf Flush is active, all values are set to zero, inserting a NOP instruction.", "pt": "Registo que separa duas etapas do pipeline.\nOs valores que transitam para a próxima etapa são armazenados aqui temporariamente.\nSe Flush estiver activo, todos os valores são colocados a zero, inserindo uma instrução NOP."}},
 		
 		"ForkReg":    {"type": "Fork", "x": 445, "y": 281, "size": 32, "in": "In", "out": ["Out1", "Out2"]},
 		"MuxFwdA":    {"type": "Multiplexer", "latency": 15, "x": 425, "y": 230, "size": 32, "sel": "ForwardA", "out": "Out", "in": ["0", "1", "2"], "desc": {"default": "Selects, in conjunction with the forwarding unit, if the value of the 1st register comes from the register bank or if it's forwarded from one of the next stages.", "pt": "Selecciona, em conjunto com a unidade de atalhos, se o valor do 1º registo vem do banco de registos ou se é encaminhado de uma das etapas seguintes."}},
@@ -88,40 +75,17 @@
 		"ForkMemR1":  {"type": "Fork", "x": 416, "y": 480, "size": 32, "in": "In", "out": ["Out1", "Out2"]}
 	},
 	"wires": [
-		{"from": "DistInst", "out": "10-6", "to": "ShamtConcat", "in": "Shamt", "start": {"x": 205, "y": 280}, "points": 	         [{"x": 210, "y": 280}, {"x": 210, "y": 400}], "end": {"x": 300, "y": 400}},
-		{"from": "Const0", "out": "Out", "to": "ShamtConcat", "in": "Const0", "start": {"x": 300, "y": 410}, "end": {"x": 300, "y": 405}},
-		{"from": "ShamtConcat", "out": "Out", "to": "ID/EX", "in": "Shamt", "start": {"x": 300, "y": 400}, "end": {"x": 390, "y": 400}},
+        {"from": "Const0", "out": "Out", "to": "ShamtConcat", "in": "In1"},
+        {"from": "DistInst", "out": "10-6", "to": "ShamtConcat", "in": "In2", "start": {"x": 205, "y": 277}, "points": [{"x": 218, "y": 277}, {"x": 218, "y": 326}], "end": {"x": 350, "y": 326}},
+        {"from": "ShamtConcat", "out": "Out", "to": "ID/EX", "in": "Shamt", "start": {"x": 350, "y": 326}, "end": {"x": 390, "y": 326}},
 
-		
-		{"from": "DistImm", "out": "5-0", "to": "ForkFunc", "in": "In", "start": {"x": 448, "y": 350}},
-		{"from": "ForkFunc", "out": "Out1", "to": "ALUControl", "in": "func", "start": {"x": 455, "y": 350}},
-		
-		
-		{"from": "ForkFunc", "out": "Out2", "to": "DistFunc", "in": "Func", "start": {"x": 455, "y": 350}, "points": [{"x": 460 , "y": 350}, {"x": 460, "y": 405}, {"x": 310, "y": 405}, {"x": 310, "y": 425}], "end": {"x": 330, "y":425}},
+        {"from": "Control", "out": "Shamt", "to": "ID/EX", "in": "ShamtControl", "start": {"x": 280, "y": 165}, "end": {"x": 385, "y": 165}},
+        {"from": "ID/EX", "out": "ShamtControl", "to": "MuxShamt", "in": "Shamt", "start": {"x": 400, "y": 317}, "points": [{"x": 522, "y": 317}], "end": {"x": 522, "y": 320}},
+        {"from": "ID/EX", "out": "Shamt", "to": "MuxShamt", "in": "1", "start": {"x": 400, "y": 325},"end": {"x": 515, "y": 325}},
 
-		{"from": "DistFunc", "out": "5-5", "to": "Or5", "in": "In1", "start": {"x": 330, "y": 410}, "points": [{"x": 340 , "y": 410}, {"x": 340, "y": 415}], "end": {"x": 350, "y": 415}},
-		{"from": "DistFunc", "out": "4-4", "to": "Or4", "in": "In1", "start": {"x": 330, "y": 430}, "points": [{"x": 340 , "y": 430}, {"x": 340, "y": 435}], "end": {"x": 350, "y": 435}},
-		{"from": "DistFunc", "out": "3-3", "to": "Or3", "in": "In1", "start": {"x": 330, "y": 440}, "points": [{"x": 340 , "y": 440}, {"x": 340, "y": 455}], "end": {"x": 350, "y": 455}},
-		{"from": "Const0Or5", "out": "Out", "to": "Or5", "in": "In2", "start": {"x": 325, "y": 460}, "points": [{"x": 345, "y": 460}, {"x": 345, "y": 420}], "end": {"x": 350, "y": 420}}, 
-		{"from": "Const0Or4", "out": "Out", "to": "Or4", "in": "In2", "start": {"x": 325, "y": 460}, "points": [{"x": 345, "y": 460}, {"x": 345, "y": 440}], "end": {"x": 350, "y": 440}},
-		{"from": "Const0Or3", "out": "Out", "to": "Or3", "in": "In2", "start": {"x": 325, "y": 460}, "points": [{"x": 345, "y": 460}, {"x": 345, "y": 460}], "end": {"x": 350, "y": 460}},  
 
-		{"from": "Or5", "out": "Out", "to": "Mux1", "in": "ResOr5", "start": {"x": 350, "y": 420}, "end": {"x": 395, "y": 410}},
-		{"from": "Or4", "out": "Out", "to": "Mux1", "in": "ResOr4", "start": {"x": 350, "y": 440}, "end": {"x": 390, "y": 415}},
-		{"from": "Const1Mux1", "out": "Out", "to": "Mux1", "in": "1", "start": {"x": 375, "y": 410}, "end": {"x": 390, "y": 420}},
 
-		{"from": "Mux1", "out": "Out", "to": "Mux2", "in": "ResOr4", "start": {"x": 390, "y": 415}, "end": {"x": 420, "y": 450}},
-		{"from": "Or3", "out": "Out", "to": "Mux2", "in": "ResOr3", "start": {"x": 350, "y": 460}, "end": {"x": 415, "y": 455}},
-		{"from": "Const1Mux2", "out": "Out", "to": "Mux2", "in": "1", "start": {"x": 375, "y": 450}, "end": {"x": 415, "y": 465}},
 
-		{"from": "MuxShamt", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 480, "y": 287}},
-
-		{"from": "MuxReg", "out": "Out", "to": "MuxShamt", "in": "rt", "end": {"x": 465, "y": 275}},
-		{"from": "ID/EX", "out": "Shamt", "to": "MuxShamt", "in": "shamt", "end": {"x": 465, "y": 275}},
-		
-		{"from": "Mux2", "out": "Out", "to": "MuxShamt", "in": "ShiftInst", "end": {"x": 465, "y": 285}},
-
-		
 
 
 		{"from": "PC", "out": "PC", "to": "ForkPC", "in": "In"},
@@ -151,6 +115,7 @@
 		{"from": "DistInst", "out": "15-11", "to": "ID/EX", "in": "Rd", "start": {"x": 205, "y": 275}, "points": [{"x": 215, "y": 275}, {"x": 215, "y": 392}], "end": {"x": 390, "y": 392}},
 		{"from": "RegBank", "out": "ReadData1", "to": "ID/EX", "in": "ReadData1", "end": {"x": 390, "y": 248}},
 		{"from": "RegBank", "out": "ReadData2", "to": "ID/EX", "in": "ReadData2", "end": {"x": 390, "y": 281}},
+
 		{"from": "ExtendImm", "out": "Out", "to": "ID/EX", "in": "Imm", "end": {"x": 390, "y": 350}},
 		{"from": "Control", "out": "ALUOp", "to": "ID/EX", "in": "ALUOp", "start": {"x": 290, "y": 160}, "end": {"x": 390, "y": 160}},
 		{"from": "Control", "out": "ALUSrc", "to": "ID/EX", "in": "ALUSrc", "start": {"x": 290, "y": 155}, "end": {"x": 390, "y": 155}},
@@ -178,15 +143,18 @@
 		{"from": "ForkReg", "out": "Out2", "to": "EX/MEM", "in": "ReadData2", "points": [{"x": 445, "y": 308}], "end": {"x": 550, "y": 308}},
 
 
+
+
+		{"from": "MuxReg", "out": "Out", "to": "MuxShamt", "in": "0", "end": {"x": 515, "y": 335}},
+		{"from": "MuxShamt", "out": "Out", "to": "ALU", "in": "In2", "end": {"x": 480, "y": 287}},
 		
-		
+
+
 
 		{"from": "ID/EX", "out": "ALUSrc", "to": "MuxReg", "in": "ALUSrc", "start": {"x": 405, "y": 155}, "points": [{"x": 462, "y": 155}]},
 		{"from": "ID/EX", "out": "Imm", "to": "DistImm", "in": "In", "start": {"x": 405, "y": 350}, "end": {"x": 448, "y": 350}},
 		{"from": "ALUControl", "out": "Operation", "to": "ALU", "in": "Operation", "points": [{"x": 510, "y": 350}]},
-		
-		
-		
+		{"from": "DistImm", "out": "5-0", "to": "ALUControl", "in": "func", "start": {"x": 448, "y": 350}},
 		{"from": "ID/EX", "out": "ALUOp", "to": "ALUControl", "in": "ALUOp", "start": {"x": 405, "y": 160}, "points": [{"x": 446, "y": 160}, {"x": 446, "y": 235}, {"x": 476, "y": 235}]},
 		{"from": "ALU", "out": "Zero", "to": "EX/MEM", "in": "Zero", "start": {"x": 540, "y": 255}, "end": {"x": 550, "y": 255}},
 		{"from": "ALU", "out": "Result", "to": "EX/MEM", "in": "Result", "start": {"x": 540, "y": 275}, "end": {"x": 550, "y": 275}},

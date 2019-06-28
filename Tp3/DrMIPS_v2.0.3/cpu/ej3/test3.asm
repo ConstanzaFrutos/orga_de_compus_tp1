@@ -1,12 +1,2 @@
-li	$t1, 1
-nop
-nop
-nop
-nop
-nop
-add	$t0, $zero, $t1
-nop
-nop
-nop
-nop
-srl	$t1, $t0, 2
+li	$t1, 8
+srl	$t1, $t1, 2
