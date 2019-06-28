@@ -1,6 +1,6 @@
 {
 	"components": {
-		"ForkJR":    {"type": "Fork", "x": 365, "y": 248, "size": 32, "in": "In", "out": ["Out1", "Out2"]},		
+		"ForkFwdA":    {"type": "Fork", "x": 445, "y": 250, "size": 32, "in": "In", "out": ["Out1", "Out2"]},		
 		"MuxJR":     {"type": "Multiplexer", "latency": 15, "x": 30, "y": 300, "size": 32, "sel": "JumpReg", "out": "Out", "in": ["0", "1"], "desc": {"default": "Selecciona entre el resultado anterior o el registro rs del jump reg.", "pt": "."}},
 
 		"MuxWD":     {"type": "Multiplexer", "latency": 15, "x": 750, "y": 260, "size": 32, "sel": "Link", "out": "Out", "in": ["0", "1"], "desc": {"default": "Si la instrucción es de link manda el valor de PC+4 al destino.", "pt": "."}},
@@ -122,13 +122,13 @@
 		
 
 
-		{"from": "RegBank", "out": "ReadData1", "to": "ForkJR", "in": "In", "end": {"x": 365, "y": 248}},
-		{"from": "ForkJR", "out": "Out1", "to": "ID/EX", "in": "ReadData1", "end": {"x": 390, "y": 248}},
+		{"from": "RegBank", "out": "ReadData1", "to": "ID/EX", "in": "ReadData1", "end": {"x": 390, "y": 248}},
+		
 
-		{"from": "ForkJR", "out": "Out2", "to": "ID/EX", "in": "Rs2", "points": [{"x": 366, "y": 249}, {"x": 366, "y": 400}],"end": {"x": 390, "y": 400}},
-		{"from": "ID/EX", "out": "Rs2", "to": "EX/MEM", "in": "Rs2", "start": {"x": 405, "y": 400},"end": {"x": 550, "y": 400}},
-		{"from": "EX/MEM", "out": "Rs2", "to": "MEM/WB", "in": "Rs2", "start": {"x": 565, "y": 400},"end": {"x": 680, "y": 400}},
-		{"from": "MEM/WB", "out": "Rs2", "to": "MuxJR", "in": "1", "start": {"x": 565, "y": 400}, "points": [{"x": 700, "y": 400}, {"x": 700, "y": 420}, {"x": 20, "y": 420}, {"x": 20, "y": 320}],"end": {"x": 30, "y": 320}},
+		{"from": "ForkFwdA", "out": "Out2", "to": "EX/MEM", "in": "Rs2", "points": [{"x": 445, "y": 250}, {"x": 445, "y": 395}], "end": {"x": 550, "y": 395}},
+		
+		{"from": "EX/MEM", "out": "Rs2", "to": "MEM/WB", "in": "Rs2", "start": {"x": 565, "y": 395},"end": {"x": 680, "y": 395}},
+		{"from": "MEM/WB", "out": "Rs2", "to": "MuxJR", "in": "1", "start": {"x": 565, "y": 395}, "points": [{"x": 700, "y": 395}, {"x": 700, "y": 420}, {"x": 20, "y": 420}, {"x": 20, "y": 320}],"end": {"x": 30, "y": 320}},
 
 
 
@@ -154,7 +154,12 @@
 		{"from": "ForkWrite", "out": "Out2", "to": "PC", "in": "Write", "points": [{"x": 55, "y": 50}]},
 		
 		{"from": "ID/EX", "out": "ReadData1", "to": "MuxFwdA", "in": "0", "start": {"x": 405, "y": 248}, "end": {"x": 425, "y": 248}},
-		{"from": "MuxFwdA", "out": "Out", "to": "ALU", "in": "In1", "start": {"x": 440, "y": 250}, "end": {"x": 480, "y": 250}},
+
+
+		{"from": "MuxFwdA", "out": "Out", "to": "ForkFwdA", "in": "In", "start": {"x": 440, "y": 250}},
+		{"from": "ForkFwdA", "out": "Out1", "to": "ALU", "in": "In1", "start": {"x": 446, "y": 250}, "end": {"x": 480, "y": 250}},
+		
+
 		{"from": "ID/EX", "out": "ReadData2", "to": "MuxFwdB", "in": "0", "start": {"x": 405, "y": 281}, "end": {"x": 425, "y": 281}},
 		{"from": "MuxFwdB", "out": "Out", "to": "ForkReg", "in": "In", "start": {"x": 440, "y": 281}},
 		{"from": "ForkEXR2", "out": "Out2", "to": "MuxFwdB", "in": "2"},

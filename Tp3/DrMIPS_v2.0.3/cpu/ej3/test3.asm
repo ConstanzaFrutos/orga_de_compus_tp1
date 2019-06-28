@@ -1,6 +1,12 @@
-li	$t0, 10
+li	$t1, 1
 nop
 nop
 nop
 nop
-srl	$t0, $t0, 2
+nop
+add	$t0, $zero, $t1
+nop
+nop
+nop
+nop
+srl	$t1, $t0, 2
