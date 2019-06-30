@@ -8,6 +8,10 @@
 
 		"ConcatJump": {"type": "Concatenator", "x": 510, "y": 90, "in1": {"id": "In1", "size": 4}, "in2": {"id": "Target", "size": 28}, "out": "Out", "desc": {"default": "Concatena los 4 bits mas significativos de PC+4 al target, obteniendose la dirección a la cual se va a saltar.", "pt": "."}},
 
+		"MuxFlush":     {"type": "Multiplexer", "latency": 15, "x": 435, "y": 70, "size": 1, "sel": "Flush", "out": "Out", "in": ["0", "1"], "desc": {"default": "Si es una instrucción de jump flushea, sino manda el resultado del or (OrFlush).", "pt": "."}},
+		"Const1":     {"type": "Constant", "x": 415, "y": 90, "out": "Out", "val": 1, "size": 1},
+		"ForkFlush":  {"type": "Fork", "x": 300, "y": 80, "size": 1, "in": "In", "out": ["Out1", "Out2"]},
+
 
 
 
@@ -74,23 +78,28 @@
 		"ForkMemR1":  {"type": "Fork", "x": 416, "y": 480, "size": 32, "in": "In", "out": ["Out1", "Out2"]}
 	},
 	"wires": [
-		{"from": "Control", "out": "Jump", "to": "MuxJump", "in": "Jump", "start": {"x": 290, "y": 80}, "points": [{"x": 295, "y": 80}, {"x": 295, "y": 60}, {"x": 38, "y": 60}], "end": {"x": 38, "y": 190}},
-		
+		{"from": "Control", "out": "Jump", "to": "ForkFlush", "in": "In", "start": {"x": 290, "y": 80}},
+		{"from": "ForkFlush", "out": "Out1", "to": "MuxJump", "in": "Jump", "start": {"x": 302, "y": 80}, "points": [{"x": 302, "y": 60}, {"x": 38, "y": 60}], "end": {"x": 38, "y": 190}},
+		{"from": "ForkFlush", "out": "Out2", "to": "ID/EX", "in": "Jump", "start": {"x": 302, "y": 80}, "points": [{"x": 310, "y": 80}, {"x": 310, "y": 115}], "end": {"x": 390, "y": 115}},
+		{"from": "ID/EX", "out": "Jump", "to": "MuxFlush", "in": "Flush", "start": {"x": 405, "y": 115}, "points": [{"x": 470, "y": 115}, {"x": 470, "y": 50}, {"x": 442, "y": 50}], "end": {"x": 442, "y": 70}},
 
+		 
+		
 		{"from": "DistInst", "out": "25-0", "to": "ShiftJump", "in": "In", "start": {"x": 204, "y": 252}, "points": [{"x": 205, "y": 252}, {"x": 205, "y": 90}], "end": {"x": 320, "y": 90}},
-		
-
 		
 		{"from": "ShiftJump", "out": "Out", "to": "ConcatJump", "in": "Target", "start": {"x": 480, "y": 91}, "end": {"x": 510, "y": 91}},		
 
-
 		{"from": "DistJump", "out": "31-28", "to": "ConcatJump", "in": "In1", "start": {"x": 310, "y": 185}, "points": [ {"x": 490, "y": 185}, {"x": 490, "y": 110}, {"x": 511, "y": 110}], "end": {"x": 511, "y": 90}},
-
 
 		{"from": "ConcatJump", "out": "Out", "to": "MuxJump", "in": "Target", "start": {"x": 511, "y": 91}, "points": [{"x": 520, "y": 91}, {"x": 520, "y": 3}, {"x": 25, "y": 3}, {"x": 25, "y": 205}], "end": {"x": 38, "y": 205}},
 		
-
 		{"from": "MuxJump", "out": "Out", "to": "PC", "in": "NewPC", "start": {"x": 38, "y": 210}, "points": [{"x": 50, "y": 210}, {"x": 50, "y": 240}, {"x": 36, "y": 240}, {"x": 36, "y": 255}], "end": {"x": 40, "y": 255}},
+
+
+		{"from": "Const1", "out": "Out", "to": "MuxFlush", "in": "1", "start": {"x": 425, "y": 90}, "points": [{"x": 425, "y": 85}], "end": {"x": 435, "y": 85}},
+		{"from": "OrFlush", "out": "Flush", "to": "MuxFlush", "in": "0", "start": {"x": 395, "y": 100}, "points": [{"x": 395, "y": 102}, {"x": 417, "y": 102}, {"x": 417, "y": 75}], "end": {"x": 435, "y": 75}},
+		{"from": "MuxFlush", "out": "Out", "to": "ID/EX", "in": "Flush", "start": {"x": 450, "y": 90}, "points": [{"x": 455, "y": 90}, {"x": 455, "y": 110}]},
+
 
 
 
@@ -144,7 +153,9 @@
 		{"from": "Control", "out": "RegWrite", "to": "ID/EX", "in": "RegWrite", "start": {"x": 290, "y": 125}, "end": {"x": 390, "y": 125}},
 		{"from": "HazardUnit", "out": "Stall", "to": "ForkStall", "in": "In"},
 		{"from": "ForkStall", "out": "Out1", "to": "OrFlush", "in": "Stall", "points": [{"x": 382, "y": 5}], "end": {"x": 382, "y": 70}},
-		{"from": "OrFlush", "out": "Flush", "to": "ID/EX", "in": "Flush", "start": {"x": 395, "y": 100}},
+
+
+		
 		{"from": "ForkStall", "out": "Out2", "to": "NotStall", "in": "Stall", "end": {"x": 205, "y": 5}},
 		{"from": "NotStall", "out": "Write", "to": "ForkWrite", "in": "In", "start": {"x": 190, "y": 32}},
 		{"from": "ForkWrite", "out": "Out1", "to": "IF/ID", "in": "Write"},
